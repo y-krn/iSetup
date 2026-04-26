@@ -5,8 +5,6 @@ import { ArrowLeft } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { LikeButton } from '@/components/LikeButton'
 import { TagBadge } from '@/components/TagBadge'
-import { DeleteButton } from '@/components/DeleteButton'
-import { EditButton } from '@/components/EditButton'
 import { AppLink } from '@/components/AppLink'
 
 type Props = { params: Promise<{ id: string }> }
@@ -48,8 +46,6 @@ export default async function PostPage({ params }: Props) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <LikeButton postId={post.id} initialCount={post.like_count} />
-          <EditButton postId={post.id} ownerAnonId={post.anon_user_id} />
-          <DeleteButton postId={post.id} ownerAnonId={post.anon_user_id} redirectAfter="/" />
         </div>
         {colors.length > 0 && (
           <div className="flex gap-1">

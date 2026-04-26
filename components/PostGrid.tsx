@@ -12,9 +12,9 @@ type Post = {
   anon_user_id: string | null
 }
 
-type Props = { initialPosts: Post[]; tag?: string; theme?: string }
+type Props = { initialPosts: Post[]; tag?: string; theme?: string; showEdit?: boolean }
 
-export function PostGrid({ initialPosts, tag, theme }: Props) {
+export function PostGrid({ initialPosts, tag, theme, showEdit }: Props) {
   const [posts, setPosts] = useState<Post[]>(initialPosts)
   const [cursor, setCursor] = useState<string | null>(
     initialPosts.at(-1)?.created_at ?? null
@@ -59,7 +59,7 @@ export function PostGrid({ initialPosts, tag, theme }: Props) {
     <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {posts.map((post, i) => (
-          <PostCard key={post.id} post={post} priority={i < 4} />
+          <PostCard key={post.id} post={post} priority={i < 4} showEdit={showEdit} />
         ))}
       </div>
       <div ref={sentinelRef} className="h-4" />

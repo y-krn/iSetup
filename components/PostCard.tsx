@@ -2,6 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { LikeButton } from './LikeButton'
 import { DeleteButton } from './DeleteButton'
+import { EditButton } from './EditButton'
 
 type ExtractedTags = {
   theme?: string
@@ -16,9 +17,9 @@ type Post = {
   anon_user_id: string | null
 }
 
-type Props = { post: Post; priority?: boolean }
+type Props = { post: Post; priority?: boolean; showEdit?: boolean }
 
-export function PostCard({ post, priority }: Props) {
+export function PostCard({ post, priority, showEdit }: Props) {
   const tags = post.extracted_tags ?? {}
   const theme = tags.theme
 
@@ -41,7 +42,12 @@ export function PostCard({ post, priority }: Props) {
       </Link>
       <div className="p-2 flex items-center justify-between">
         <LikeButton postId={post.id} initialCount={post.like_count} />
-        <DeleteButton postId={post.id} ownerAnonId={post.anon_user_id} />
+        {showEdit && (
+          <div className="flex items-center gap-3">
+            <EditButton postId={post.id} ownerAnonId={post.anon_user_id} />
+            <DeleteButton postId={post.id} ownerAnonId={post.anon_user_id} />
+          </div>
+        )}
       </div>
     </div>
   )
