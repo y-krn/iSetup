@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import sharp from 'sharp'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { analyzeScreenshot, type ExtractedTags } from '@/lib/gemini'
+import { analyzeScreenshotFromBase64, type ExtractedTags } from '@/lib/gemini'
 import { lookupApps } from '@/lib/app-store'
 
 const BUCKET = 'screenshots'
@@ -39,34 +40,25 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminClient()
 
-    // Upload to Storage
-    const ext = file.name.split('.').pop() ?? 'jpg'
-    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const bytes = await file.arrayBuffer()
+    // 原本Buffer取得
+    const originalBuffer = Buffer.from(await file.arrayBuffer())
+    const originalMime = file.type || 'image/png'
 
-    const { error: uploadError } = await supabase.storage
-      .from(BUCKET)
-      .upload(path, bytes, { contentType: file.type, upsert: false })
-
-    if (uploadError) throw uploadError
-
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path)
-    const imageUrl = urlData.publicUrl
-
-    // AI analysis
+    // AI解析 (原本品質)
     let extractedTags: ExtractedTags & {
       app_links?: Record<string, unknown>
       widget_links?: Record<string, unknown>
     } = {} as ExtractedTags
     try {
-      extractedTags = await analyzeScreenshot(imageUrl)
-      // App Store URL解決 (apps + dock_apps)
+      extractedTags = await analyzeScreenshotFromBase64(
+        originalBuffer.toString('base64'),
+        originalMime,
+      )
       const allApps = [...(extractedTags.apps ?? []), ...(extractedTags.dock_apps ?? [])]
       const uniqueApps = Array.from(new Set(allApps))
       if (uniqueApps.length > 0) {
         extractedTags.app_links = await lookupApps(uniqueApps)
       }
-      // Widget名もApp Store解決
       const uniqueWidgets = Array.from(new Set(extractedTags.widgets ?? []))
       if (uniqueWidgets.length > 0) {
         extractedTags.widget_links = await lookupApps(uniqueWidgets)
@@ -74,6 +66,24 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       console.warn('AI analysis failed, continuing without tags:', e)
     }
+
+    // sharp 圧縮: WebP / 最大1080px / quality 80
+    const compressedBuffer = await sharp(originalBuffer)
+      .rotate() // EXIF 自動補正
+      .resize({ width: 1080, height: 1080, fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer()
+
+    // Storage アップロード (圧縮版のみ)
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.webp`
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, compressedBuffer, { contentType: 'image/webp', upsert: false })
+
+    if (uploadError) throw uploadError
+
+    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path)
+    const imageUrl = urlData.publicUrl
 
     // Insert post
     const { data, error } = await supabase

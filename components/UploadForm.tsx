@@ -69,7 +69,7 @@ export function UploadForm() {
       {error && <p className="text-red-500 text-sm">{error}</p>}
       <Button type="submit" disabled={!file || uploading} className="w-full gap-2">
         <Upload size={16} />
-        {uploading ? 'AI解析中...' : '投稿する'}
+        {uploading ? 'AI解析・圧縮中...' : '投稿する'}
       </Button>
     </form>
   )

@@ -18,12 +18,10 @@ Format: {"apps":["AppName",...],"widgets":["WidgetName",...],"wallpaper_colors":
 - theme: overall dark or light
 - dock_apps: top-level apps in bottom dock ONLY. EXCLUDE apps inside folders.`
 
-export async function analyzeScreenshot(imageUrl: string): Promise<ExtractedTags> {
-  const res = await fetch(imageUrl)
-  const buffer = await res.arrayBuffer()
-  const base64 = Buffer.from(buffer).toString('base64')
-  const mimeType = res.headers.get('content-type') ?? 'image/png'
-
+export async function analyzeScreenshotFromBase64(
+  base64: string,
+  mimeType: string,
+): Promise<ExtractedTags> {
   const result = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: [
@@ -42,4 +40,12 @@ export async function analyzeScreenshot(imageUrl: string): Promise<ExtractedTags
   if (!jsonMatch) throw new Error('No JSON in response')
 
   return JSON.parse(jsonMatch[0]) as ExtractedTags
+}
+
+export async function analyzeScreenshot(imageUrl: string): Promise<ExtractedTags> {
+  const res = await fetch(imageUrl)
+  const buffer = await res.arrayBuffer()
+  const base64 = Buffer.from(buffer).toString('base64')
+  const mimeType = res.headers.get('content-type') ?? 'image/png'
+  return analyzeScreenshotFromBase64(base64, mimeType)
 }
