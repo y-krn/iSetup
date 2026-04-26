@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Upload, User, LogIn } from 'lucide-react'
+import { Upload, User, LogIn, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { SignOutButton } from './SignOutButton'
 
@@ -10,6 +10,14 @@ export async function AuthHeader() {
 
   return (
     <div className="flex items-center gap-2">
+      <Link
+        href="/apps"
+        className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600 transition-colors"
+        aria-label="人気のアプリ"
+        title="人気のアプリ"
+      >
+        <Sparkles size={16} />
+      </Link>
       {isAuthed ? (
         <>
           <Link
