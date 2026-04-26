@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { analyzeScreenshot } from '@/lib/claude'
+import { analyzeScreenshot, type ExtractedTags } from '@/lib/gemini'
+import { lookupApps } from '@/lib/app-store'
 
 const BUCKET = 'screenshots'
 
@@ -53,9 +54,23 @@ export async function POST(req: NextRequest) {
     const imageUrl = urlData.publicUrl
 
     // AI analysis
-    let extractedTags = {}
+    let extractedTags: ExtractedTags & {
+      app_links?: Record<string, unknown>
+      widget_links?: Record<string, unknown>
+    } = {} as ExtractedTags
     try {
       extractedTags = await analyzeScreenshot(imageUrl)
+      // App Store URL解決 (apps + dock_apps)
+      const allApps = [...(extractedTags.apps ?? []), ...(extractedTags.dock_apps ?? [])]
+      const uniqueApps = Array.from(new Set(allApps))
+      if (uniqueApps.length > 0) {
+        extractedTags.app_links = await lookupApps(uniqueApps)
+      }
+      // Widget名もApp Store解決
+      const uniqueWidgets = Array.from(new Set(extractedTags.widgets ?? []))
+      if (uniqueWidgets.length > 0) {
+        extractedTags.widget_links = await lookupApps(uniqueWidgets)
+      }
     } catch (e) {
       console.warn('AI analysis failed, continuing without tags:', e)
     }

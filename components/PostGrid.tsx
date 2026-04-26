@@ -9,6 +9,7 @@ type Post = {
   like_count: number
   extracted_tags: Record<string, unknown>
   created_at: string
+  anon_user_id: string | null
 }
 
 type Props = { initialPosts: Post[]; tag?: string; theme?: string }

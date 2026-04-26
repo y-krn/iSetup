@@ -55,7 +55,7 @@ export function UploadForm() {
       >
         {preview ? (
           <div className="relative w-full" style={{ aspectRatio: '9/19.5' }}>
-            <Image src={preview} alt="preview" fill className="object-contain rounded-2xl" />
+            <Image src={preview} alt="preview" fill sizes="(max-width: 640px) 100vw, 384px" className="object-contain rounded-2xl" />
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-16 text-gray-400">

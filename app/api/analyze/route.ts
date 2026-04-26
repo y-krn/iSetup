@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { analyzeScreenshot } from '@/lib/claude'
+import { analyzeScreenshot } from '@/lib/gemini'
 
 export async function POST(req: NextRequest) {
   try {
