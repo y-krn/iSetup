@@ -49,15 +49,29 @@ export default async function AppPage({ params }: Props) {
     Promise.resolve(createAdminClient()),
   ])
 
-  // 投稿検索キー: 数値スラッグなら trackName で検索、文字列スラッグはそのまま
-  const searchKey = info?.trackName ?? decodedName
-
-  const { data: posts } = await supabase
-    .from('posts')
-    .select('*')
-    .or(`extracted_tags->apps.cs.${JSON.stringify([searchKey])},extracted_tags->dock_apps.cs.${JSON.stringify([searchKey])}`)
-    .order('created_at', { ascending: false })
-    .limit(20)
+  // 数値スラッグ = trackId → app_links/widget_links のURL値で検索 (RPC)
+  // 文字列スラッグ = 名前検索フォールバック
+  type PostRow = {
+    id: string
+    image_url: string
+    like_count: number
+    extracted_tags: Record<string, unknown>
+    created_at: string
+    anon_user_id: string | null
+  }
+  let posts: PostRow[] | null = null
+  if (/^\d+$/.test(decodedName)) {
+    const { data } = await supabase.rpc('posts_by_track_id', { track_id: decodedName })
+    posts = (data as PostRow[]) ?? null
+  } else {
+    const { data } = await supabase
+      .from('posts')
+      .select('*')
+      .or(`extracted_tags->apps.cs.${JSON.stringify([decodedName])},extracted_tags->dock_apps.cs.${JSON.stringify([decodedName])}`)
+      .order('created_at', { ascending: false })
+      .limit(20)
+    posts = data
+  }
 
   return (
     <div className="space-y-6">
