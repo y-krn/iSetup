@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { getAnonUserId } from '@/lib/anon-id'
+import { ensureAnonymousUser } from '@/lib/auth'
 import { Upload, ImageIcon } from 'lucide-react'
 
 export function UploadForm() {
@@ -31,9 +31,16 @@ export function UploadForm() {
     setUploading(true)
     setError(null)
 
+    // 匿名サインイン (idempotent)
+    const userId = await ensureAnonymousUser()
+    if (!userId) {
+      setError('認証に失敗しました')
+      setUploading(false)
+      return
+    }
+
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('anon_user_id', getAnonUserId())
 
     const res = await fetch('/api/posts', { method: 'POST', body: formData })
     if (!res.ok) {

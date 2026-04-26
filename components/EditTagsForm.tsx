@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { X, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { getAnonUserId } from '@/lib/anon-id'
+import { getCurrentUserId } from '@/lib/auth'
 
 type AppInfo = { url: string; icon: string; trackName: string }
 type Candidate = { trackName: string; artistName: string; url: string; icon: string }
@@ -217,7 +217,7 @@ export function EditTagsForm({
   const router = useRouter()
 
   useEffect(() => {
-    setAuthorized(getAnonUserId() === ownerAnonId)
+    getCurrentUserId().then(uid => setAuthorized(uid === ownerAnonId))
   }, [ownerAnonId])
 
   if (authorized === null) return null
@@ -230,7 +230,6 @@ export function EditTagsForm({
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        anonUserId: getAnonUserId(),
         apps,
         dock_apps: dockApps,
         widgets,

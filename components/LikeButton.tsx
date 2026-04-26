@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
-import { getAnonUserId } from '@/lib/anon-id'
+import { ensureAnonymousUser } from '@/lib/auth'
 
 type Props = { postId: string; initialCount: number }
 
@@ -12,15 +12,16 @@ export function LikeButton({ postId, initialCount }: Props) {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const anonUserId = getAnonUserId()
-    fetch(`/api/likes?postId=${postId}&anonUserId=${anonUserId}`)
-      .then(r => r.json())
-      .then(d => setLiked(d.liked))
+    ensureAnonymousUser().then(() => {
+      fetch(`/api/likes?postId=${postId}`)
+        .then(r => r.json())
+        .then(d => setLiked(d.liked))
+    })
   }, [postId])
 
   async function toggle() {
     if (loading) return
-    const anonUserId = getAnonUserId()
+    await ensureAnonymousUser()
     setLoading(true)
     const optimisticLiked = !liked
     setLiked(optimisticLiked)
@@ -29,7 +30,7 @@ export function LikeButton({ postId, initialCount }: Props) {
     await fetch('/api/likes', {
       method: optimisticLiked ? 'POST' : 'DELETE',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ postId, anonUserId }),
+      body: JSON.stringify({ postId }),
     })
     setLoading(false)
   }

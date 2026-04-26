@@ -1,18 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { LikeButton } from './LikeButton'
-import { TagBadge } from './TagBadge'
 import { DeleteButton } from './DeleteButton'
 
-type AppInfo = { url: string; icon: string; trackName: string }
-
 type ExtractedTags = {
-  apps?: string[]
-  widgets?: string[]
   theme?: string
-  dock_apps?: string[]
-  wallpaper_colors?: string[]
-  app_links?: Record<string, AppInfo>
 }
 
 type Post = {
@@ -28,8 +20,6 @@ type Props = { post: Post; priority?: boolean }
 
 export function PostCard({ post, priority }: Props) {
   const tags = post.extracted_tags ?? {}
-  const apps = tags.apps?.slice(0, 3) ?? []
-  const appLinks = tags.app_links ?? {}
   const theme = tags.theme
 
   return (
@@ -49,14 +39,9 @@ export function PostCard({ post, priority }: Props) {
           </span>
         )}
       </Link>
-      <div className="p-2 space-y-2">
-        <div className="flex flex-wrap gap-1">
-          {apps.map(app => <TagBadge key={app} tag={app} type="app" label={appLinks[app]?.trackName} />)}
-        </div>
-        <div className="flex items-center justify-between">
-          <LikeButton postId={post.id} initialCount={post.like_count} />
-          <DeleteButton postId={post.id} ownerAnonId={post.anon_user_id} />
-        </div>
+      <div className="p-2 flex items-center justify-between">
+        <LikeButton postId={post.id} initialCount={post.like_count} />
+        <DeleteButton postId={post.id} ownerAnonId={post.anon_user_id} />
       </div>
     </div>
   )

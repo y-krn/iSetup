@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Pencil } from 'lucide-react'
-import { getAnonUserId } from '@/lib/anon-id'
+import { getCurrentUserId } from '@/lib/auth'
 
 type Props = { postId: string; ownerAnonId: string | null }
 
@@ -12,7 +12,7 @@ export function EditButton({ postId, ownerAnonId }: Props) {
 
   useEffect(() => {
     if (!ownerAnonId) return
-    setIsOwner(getAnonUserId() === ownerAnonId)
+    getCurrentUserId().then(uid => setIsOwner(uid === ownerAnonId))
   }, [ownerAnonId])
 
   if (!isOwner) return null

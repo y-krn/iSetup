@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sharp from 'sharp'
+import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { analyzeScreenshotFromBase64, type ExtractedTags } from '@/lib/gemini'
 import { lookupApps } from '@/lib/app-store'
@@ -7,21 +8,25 @@ import { lookupApps } from '@/lib/app-store'
 const BUCKET = 'screenshots'
 
 export async function GET(req: NextRequest) {
-  const supabase = createAdminClient()
+  const admin = createAdminClient()
   const { searchParams } = new URL(req.url)
   const cursor = searchParams.get('cursor')
   const tag = searchParams.get('tag')
   const theme = searchParams.get('theme')
+  const type = searchParams.get('type')
   const limit = 20
 
-  let query = supabase
+  let query = admin
     .from('posts')
     .select('*')
     .order('created_at', { ascending: false })
     .limit(limit)
 
   if (cursor) query = query.lt('created_at', cursor)
-  if (tag) query = query.contains('extracted_tags->apps', JSON.stringify([tag]))
+  if (tag) {
+    const column = type === 'widget' ? 'widgets' : 'apps'
+    query = query.contains(`extracted_tags->${column}`, JSON.stringify([tag]))
+  }
   if (theme) query = query.eq('extracted_tags->>theme', theme)
 
   const { data, error } = await query
@@ -32,19 +37,22 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // session認証
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+
     const formData = await req.formData()
     const file = formData.get('file') as File
-    const anonUserId = formData.get('anon_user_id') as string | null
-
     if (!file) return NextResponse.json({ error: 'file required' }, { status: 400 })
 
-    const supabase = createAdminClient()
+    const admin = createAdminClient()
 
     // 原本Buffer取得
     const originalBuffer = Buffer.from(await file.arrayBuffer())
     const originalMime = file.type || 'image/png'
 
-    // AI解析 (原本品質)
+    // AI解析
     let extractedTags: ExtractedTags & {
       app_links?: Record<string, unknown>
       widget_links?: Record<string, unknown>
@@ -67,28 +75,31 @@ export async function POST(req: NextRequest) {
       console.warn('AI analysis failed, continuing without tags:', e)
     }
 
-    // sharp 圧縮: WebP / 最大1080px / quality 80
+    // sharp 圧縮
     const compressedBuffer = await sharp(originalBuffer)
-      .rotate() // EXIF 自動補正
+      .rotate()
       .resize({ width: 1080, height: 1080, fit: 'inside', withoutEnlargement: true })
       .webp({ quality: 80 })
       .toBuffer()
 
-    // Storage アップロード (圧縮版のみ)
     const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.webp`
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await admin.storage
       .from(BUCKET)
       .upload(path, compressedBuffer, { contentType: 'image/webp', upsert: false })
 
     if (uploadError) throw uploadError
 
-    const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path)
+    const { data: urlData } = admin.storage.from(BUCKET).getPublicUrl(path)
     const imageUrl = urlData.publicUrl
 
-    // Insert post
-    const { data, error } = await supabase
+    const { data, error } = await admin
       .from('posts')
-      .insert({ image_url: imageUrl, image_path: path, anon_user_id: anonUserId, extracted_tags: extractedTags })
+      .insert({
+        image_url: imageUrl,
+        image_path: path,
+        anon_user_id: user.id,
+        extracted_tags: extractedTags,
+      })
       .select()
       .single()
 

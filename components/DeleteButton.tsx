@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
-import { getAnonUserId } from '@/lib/anon-id'
+import { getCurrentUserId } from '@/lib/auth'
 
 type Props = { postId: string; ownerAnonId: string | null; redirectAfter?: string }
 
@@ -14,7 +14,7 @@ export function DeleteButton({ postId, ownerAnonId, redirectAfter }: Props) {
 
   useEffect(() => {
     if (!ownerAnonId) return
-    setIsOwner(getAnonUserId() === ownerAnonId)
+    getCurrentUserId().then(uid => setIsOwner(uid === ownerAnonId))
   }, [ownerAnonId])
 
   if (!isOwner) return null
@@ -22,11 +22,7 @@ export function DeleteButton({ postId, ownerAnonId, redirectAfter }: Props) {
   async function onDelete() {
     if (!confirm('削除しますか？取消不可。')) return
     setDeleting(true)
-    const res = await fetch(`/api/posts/${postId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ anonUserId: getAnonUserId() }),
-    })
+    const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' })
     if (!res.ok) {
       alert('削除失敗')
       setDeleting(false)
