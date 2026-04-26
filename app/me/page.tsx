@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthenticatedUser } from '@/lib/auth-server'
 import { PostGrid } from '@/components/PostGrid'
 
 export const revalidate = 0
@@ -13,19 +14,8 @@ export default async function MyPage({ searchParams }: Props) {
   const { tab } = await searchParams
   const activeTab = tab === 'liked' ? 'liked' : 'mine'
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return (
-      <div className="text-center py-20 space-y-4">
-        <p className="text-gray-500">ログインしていません</p>
-        <Link href="/upload" className="inline-block bg-black text-white px-4 py-2 rounded-full text-sm">
-          ホーム画面を投稿する
-        </Link>
-      </div>
-    )
-  }
+  const user = await getAuthenticatedUser()
+  if (!user) redirect('/login?next=/me')
 
   const admin = createAdminClient()
 

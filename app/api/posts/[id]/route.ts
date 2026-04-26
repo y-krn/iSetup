@@ -8,6 +8,7 @@ const BUCKET = 'screenshots'
 async function authenticatedUser() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user || user.is_anonymous) return null
   return user
 }
 

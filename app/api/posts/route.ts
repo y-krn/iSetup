@@ -38,10 +38,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    // session認証
+    // session認証 (匿名は拒否)
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
+    if (user.is_anonymous) return NextResponse.json({ error: 'login required' }, { status: 403 })
 
     const formData = await req.formData()
     const file = formData.get('file') as File

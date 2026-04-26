@@ -1,8 +1,12 @@
 import { UploadForm } from '@/components/UploadForm'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowLeft, AlertTriangle, Folder } from 'lucide-react'
+import { getAuthenticatedUser } from '@/lib/auth-server'
 
-export default function UploadPage() {
+export default async function UploadPage() {
+  const user = await getAuthenticatedUser()
+  if (!user) redirect('/login?next=/upload')
   return (
     <div className="max-w-sm mx-auto space-y-6">
       <div className="flex items-center gap-3">

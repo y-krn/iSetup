@@ -1,13 +1,16 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthenticatedUser } from '@/lib/auth-server'
 import { EditTagsForm } from '@/components/EditTagsForm'
 
 type Props = { params: Promise<{ id: string }> }
 
 export default async function EditPostPage({ params }: Props) {
   const { id } = await params
+  const user = await getAuthenticatedUser()
+  if (!user) redirect(`/login?next=/posts/${id}/edit`)
   const supabase = createAdminClient()
   const { data: post } = await supabase.from('posts').select('*').eq('id', id).single()
   if (!post) notFound()
