@@ -23,8 +23,17 @@ type ITunesItem = {
   primaryGenreName?: string
 }
 
-async function fetchFullInfo(name: string, country = 'jp'): Promise<ITunesItem | null> {
-  const params = new URLSearchParams({ term: name, country, entity: 'software', limit: '1' })
+async function fetchFullInfo(slug: string, country = 'jp'): Promise<ITunesItem | null> {
+  // 数値スラッグ → trackId として lookup (正確マッチ)
+  if (/^\d+$/.test(slug)) {
+    const params = new URLSearchParams({ id: slug, country, entity: 'software' })
+    const res = await fetch(`https://itunes.apple.com/lookup?${params}`, { next: { revalidate: 86400 } })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.results?.[0] ?? null
+  }
+  // 文字列 → 名前検索
+  const params = new URLSearchParams({ term: slug, country, entity: 'software', limit: '1' })
   const res = await fetch(`https://itunes.apple.com/search?${params}`, { next: { revalidate: 86400 } })
   if (!res.ok) return null
   const data = await res.json()
@@ -40,11 +49,13 @@ export default async function AppPage({ params }: Props) {
     Promise.resolve(createAdminClient()),
   ])
 
-  // 該当アプリ含む投稿取得
+  // 投稿検索キー: 数値スラッグなら trackName で検索、文字列スラッグはそのまま
+  const searchKey = info?.trackName ?? decodedName
+
   const { data: posts } = await supabase
     .from('posts')
     .select('*')
-    .or(`extracted_tags->apps.cs.${JSON.stringify([decodedName])},extracted_tags->dock_apps.cs.${JSON.stringify([decodedName])}`)
+    .or(`extracted_tags->apps.cs.${JSON.stringify([searchKey])},extracted_tags->dock_apps.cs.${JSON.stringify([searchKey])}`)
     .order('created_at', { ascending: false })
     .limit(20)
 
