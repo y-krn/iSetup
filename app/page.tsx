@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PostGrid } from '@/components/PostGrid'
+import { Hero } from '@/components/Hero'
 import { lookupApp } from '@/lib/app-store'
 
 type Props = {
@@ -31,13 +32,8 @@ export default async function Home({ searchParams }: Props) {
   const displayTag = tagInfo?.trackName ?? tag
 
   return (
-    <div className="space-y-5">
-      {!tag && !theme && (
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">タイムライン</h1>
-          <p className="text-sm text-muted">みんなのホーム画面を覗き見</p>
-        </div>
-      )}
+    <div className="space-y-8">
+      {!tag && !theme && <Hero />}
       {(tag || theme) && (
         <div className="flex items-center gap-2 text-sm flex-wrap">
           <span className="text-muted text-xs">フィルター</span>

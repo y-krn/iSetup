@@ -3,6 +3,7 @@ import { Geist } from 'next/font/google'
 import Link from 'next/link'
 import { AuthHeader } from '@/components/AuthHeader'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { AppIconBackdrop } from '@/components/AppIconBackdrop'
 import './globals.css'
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${geist.variable} antialiased`}>
         <ThemeProvider>
+          <AppIconBackdrop />
           <header className="sticky top-0 z-40 glass-soft">
             <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
               <Link
