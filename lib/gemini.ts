@@ -47,10 +47,3 @@ export async function analyzeScreenshotFromBase64(
   return JSON.parse(jsonMatch[0]) as ExtractedTags
 }
 
-export async function analyzeScreenshot(imageUrl: string): Promise<ExtractedTags> {
-  const res = await fetch(imageUrl)
-  const buffer = await res.arrayBuffer()
-  const base64 = Buffer.from(buffer).toString('base64')
-  const mimeType = res.headers.get('content-type') ?? 'image/png'
-  return analyzeScreenshotFromBase64(base64, mimeType)
-}

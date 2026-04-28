@@ -61,20 +61,3 @@ export function extractTrackId(url: string): string | null {
   return m?.[1] ?? null
 }
 
-export async function lookupAppById(id: string, country = 'jp'): Promise<AppStoreInfo | null> {
-  try {
-    const params = new URLSearchParams({ id, country, entity: 'software' })
-    const res = await fetch(`https://itunes.apple.com/lookup?${params}`, { next: { revalidate: 86400 } })
-    if (!res.ok) return null
-    const data = await res.json()
-    const item = data.results?.[0]
-    if (!item) return null
-    return {
-      url: item.trackViewUrl,
-      icon: item.artworkUrl100,
-      trackName: item.trackName,
-    }
-  } catch {
-    return null
-  }
-}

@@ -1,14 +1,10 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { extractTrackId } from '@/lib/app-store'
 
 type AppInfo = { url: string; icon: string; trackName: string }
 
 type Props = { name: string; info?: AppInfo }
-
-function extractTrackId(url: string): string | null {
-  const m = url.match(/\/id(\d+)/)
-  return m?.[1] ?? null
-}
 
 export function AppLink({ name, info }: Props) {
   const slug = info ? (extractTrackId(info.url) ?? info.trackName) : name

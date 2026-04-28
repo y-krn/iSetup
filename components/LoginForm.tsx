@@ -3,8 +3,6 @@
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Mail, Send, CheckCircle2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { createClient } from '@/lib/supabase/client'
 
 export function LoginForm() {

@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Button } from '@/components/ui/button'
 import { Upload, ImageIcon } from 'lucide-react'
 
 export function UploadForm() {

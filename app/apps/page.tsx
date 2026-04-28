@@ -1,16 +1,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { extractTrackId } from '@/lib/app-store'
 
 type AppInfo = { url: string; icon: string; trackName: string }
 type PopularApp = { name: string; use_count: number; info: AppInfo | null }
 
 export const revalidate = 0
-
-function extractTrackId(url: string): string | null {
-  const m = url.match(/\/id(\d+)/)
-  return m?.[1] ?? null
-}
 
 export default async function AppsPage() {
   const supabase = createAdminClient()
