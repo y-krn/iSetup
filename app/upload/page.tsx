@@ -1,7 +1,8 @@
 import { UploadForm } from '@/components/UploadForm'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { ArrowLeft, AlertTriangle, Folder } from 'lucide-react'
+import { AlertTriangle, Folder } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 
 export default async function UploadPage() {
@@ -10,9 +11,7 @@ export default async function UploadPage() {
   return (
     <div className="max-w-sm mx-auto space-y-5">
       <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center justify-center w-9 h-9 rounded-full glass-soft text-muted hover:text-accent transition-colors">
-          <ArrowLeft size={18} />
-        </Link>
+        <BackButton fallback="/" />
         <h1 className="text-2xl font-bold tracking-tight">ホーム画面を投稿</h1>
       </div>
       <p className="text-sm text-muted leading-relaxed">

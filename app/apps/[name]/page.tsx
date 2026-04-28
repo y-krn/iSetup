@@ -1,7 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, ExternalLink, Star } from 'lucide-react'
+import { ExternalLink, Star } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { lookupApp } from '@/lib/app-store'
 import { PostGrid } from '@/components/PostGrid'
@@ -75,10 +76,7 @@ export default async function AppPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-600 text-sm">
-        <ArrowLeft size={16} />
-        戻る
-      </Link>
+      <BackButton variant="text" />
 
       {info ? (
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">

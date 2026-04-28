@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { EditTagsForm } from '@/components/EditTagsForm'
@@ -20,10 +20,8 @@ export default async function EditPostPage({ params }: Props) {
   return (
     <div className="max-w-sm mx-auto space-y-6">
       <div className="flex items-center gap-3">
-        <Link href={`/posts/${id}`} className="text-gray-400 hover:text-gray-600">
-          <ArrowLeft size={20} />
-        </Link>
-        <h1 className="text-lg font-semibold">タグを編集</h1>
+        <BackButton fallback={`/posts/${id}`} />
+        <h1 className="text-2xl font-bold tracking-tight">タグを編集</h1>
       </div>
 
       <EditTagsForm

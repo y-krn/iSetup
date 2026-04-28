@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { BackButton } from '@/components/BackButton'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { LikeButton } from '@/components/LikeButton'
 import { TagBadge } from '@/components/TagBadge'
@@ -27,17 +27,14 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <div className="max-w-sm mx-auto space-y-5">
-      <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center justify-center w-9 h-9 rounded-full glass-soft text-muted hover:text-accent transition-colors">
-          <ArrowLeft size={18} />
-        </Link>
-        <h1 className="text-2xl font-bold tracking-tight">ホーム画面</h1>
-      </div>
+      <BackButton fallback="/" variant="text" />
 
-      <div className="relative aspect-[9/19.5] rounded-3xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+      <div className="relative aspect-[9/19.5] rounded-[2.5rem] overflow-hidden bg-black shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] ring-[3px] ring-black ring-offset-1 ring-offset-black/40">
         <Image src={post.image_url} alt="iOS home screen" fill sizes="(max-width: 640px) 100vw, 384px" className="object-cover" priority />
+        {/* Dynamic Island */}
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 w-[28%] h-[3.2%] min-h-[18px] bg-black rounded-full pointer-events-none z-10" />
         {theme && (
-          <span className="absolute top-3 right-3 glass-soft text-white/95 text-xs font-medium px-3 py-1 rounded-full">
+          <span className="absolute bottom-3 right-3 glass-soft text-white/95 text-xs font-medium px-3 py-1 rounded-full">
             {theme}
           </span>
         )}
