@@ -1,7 +1,7 @@
 import { BackButton } from '@/components/BackButton'
 
 export const metadata = {
-  title: 'プライバシーポリシー — homescreen.share',
+  title: 'プライバシーポリシー — iSetup.app',
 }
 
 export default function PrivacyPage() {

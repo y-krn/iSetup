@@ -10,8 +10,9 @@ import './globals.css'
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 
 export const metadata: Metadata = {
-  title: 'homescreen.share',
-  description: 'iOSホーム画面を共有しよう',
+  title: 'iSetup — iOSホーム画面を共有しよう',
+  description: 'iSetup.app — みんなのiOSホーム画面を覗き見。AIが自動でアプリ・ウィジェットを解析。',
+  metadataBase: new URL('https://isetup.app'),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 href="/"
                 className="font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-fuchsia-500 dark:from-indigo-300 dark:to-fuchsia-300 bg-clip-text text-transparent"
               >
-                homescreen.share
+                iSetup.app
               </Link>
               <AuthHeader />
             </div>

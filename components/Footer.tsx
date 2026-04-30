@@ -8,7 +8,7 @@ export function Footer() {
         <span aria-hidden>·</span>
         <Link href="/privacy" className="hover:text-accent transition-colors">プライバシーポリシー</Link>
         <span aria-hidden>·</span>
-        <span>© homescreen.share</span>
+        <span>© iSetup.app</span>
       </div>
     </footer>
   )

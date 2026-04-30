@@ -1,7 +1,7 @@
 import { BackButton } from '@/components/BackButton'
 
 export const metadata = {
-  title: '利用規約 — homescreen.share',
+  title: '利用規約 — iSetup.app',
 }
 
 export default function TermsPage() {
@@ -13,7 +13,7 @@ export default function TermsPage() {
 
       <Section title="第1条 (適用)">
         <p>
-          本規約は、homescreen.share (以下「本サービス」) の提供条件および本サービスの利用に関する運営者と利用者との間の権利義務関係を定めるものです。
+          本規約は、iSetup.app (以下「本サービス」) の提供条件および本サービスの利用に関する運営者と利用者との間の権利義務関係を定めるものです。
           利用者は、本規約に同意した上で本サービスを利用するものとします。
         </p>
       </Section>
