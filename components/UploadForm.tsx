@@ -22,16 +22,47 @@ export function UploadForm() {
     setError(null)
   }
 
+  async function compressImage(f: File, maxDim = 1500, quality = 0.85): Promise<Blob> {
+    const url = URL.createObjectURL(f)
+    try {
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const i = new window.Image()
+        i.onload = () => resolve(i)
+        i.onerror = () => reject(new Error('画像を読み込めませんでした'))
+        i.src = url
+      })
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height))
+      const w = Math.round(img.width * scale)
+      const h = Math.round(img.height * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) throw new Error('canvas context取得失敗')
+      ctx.drawImage(img, 0, 0, w, h)
+      return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob(
+          b => (b ? resolve(b) : reject(new Error('圧縮失敗'))),
+          'image/jpeg',
+          quality,
+        )
+      })
+    } finally {
+      URL.revokeObjectURL(url)
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!file) return
     setUploading(true)
     setError(null)
 
-    const formData = new FormData()
-    formData.append('file', file)
-
     try {
+      const compressed = await compressImage(file)
+      const formData = new FormData()
+      formData.append('file', compressed, 'screenshot.jpg')
+
       const res = await fetch('/api/posts', { method: 'POST', body: formData })
       if (!res.ok) {
         const d = await res.json().catch(() => ({}))
