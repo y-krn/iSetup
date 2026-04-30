@@ -17,7 +17,6 @@ export function UploadForm() {
     const f = e.target.files?.[0]
     if (!f) return
     if (!f.type.startsWith('image/')) { setError('画像ファイルを選択してください'); return }
-    if (f.size > 4 * 1024 * 1024) { setError('4MB以下の画像を選択してください'); return }
     setFile(f)
     setPreview(URL.createObjectURL(f))
     setError(null)
@@ -65,7 +64,7 @@ export function UploadForm() {
               <ImageIcon size={28} strokeWidth={1.5} className="text-white" />
             </div>
             <p className="text-sm font-medium">スクリーンショットを選択</p>
-            <p className="text-xs text-muted">PNG / JPG・4MB以下</p>
+            <p className="text-xs text-muted">PNG / JPG</p>
           </div>
         )}
       </div>
