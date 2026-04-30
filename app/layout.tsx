@@ -7,7 +7,7 @@ import { AppIconBackdrop } from '@/components/AppIconBackdrop'
 import { Footer } from '@/components/Footer'
 import './globals.css'
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans', preload: false })
 
 export const metadata: Metadata = {
   title: 'iSetup — iOSホーム画面を共有しよう',
