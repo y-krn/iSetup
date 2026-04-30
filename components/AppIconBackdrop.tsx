@@ -1,8 +1,5 @@
 import Image from 'next/image'
-import { createAdminClient } from '@/lib/supabase/admin'
-
-type AppInfo = { url: string; icon: string; trackName: string }
-type PopularApp = { name: string; use_count: number; info: AppInfo | null }
+import { getPopularApps, type PopularApp } from '@/lib/popular-apps'
 
 // 決定論的疑似乱数 (シード基準) → SSR/CSR 一致
 function seededRandom(seed: number) {
@@ -11,9 +8,8 @@ function seededRandom(seed: number) {
 }
 
 export async function AppIconBackdrop() {
-  const supabase = createAdminClient()
-  const { data } = await supabase.rpc('popular_apps', { limit_count: 24 })
-  const apps: PopularApp[] = (data ?? []).filter((a: PopularApp) => a.info?.icon)
+  const data = await getPopularApps(24)
+  const apps: PopularApp[] = data.filter((a) => !!a.info?.icon)
 
   if (apps.length === 0) return null
 

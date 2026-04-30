@@ -1,17 +1,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { extractTrackId } from '@/lib/app-store'
-
-type AppInfo = { url: string; icon: string; trackName: string }
-type PopularApp = { name: string; use_count: number; info: AppInfo | null }
+import { getPopularApps } from '@/lib/popular-apps'
 
 export const revalidate = 0
 
 export default async function AppsPage() {
-  const supabase = createAdminClient()
-  const { data } = await supabase.rpc('popular_apps', { limit_count: 60 })
-  const apps: PopularApp[] = data ?? []
+  const apps = await getPopularApps(60)
 
   return (
     <div className="space-y-5">
