@@ -17,7 +17,7 @@ export function UploadForm() {
     const f = e.target.files?.[0]
     if (!f) return
     if (!f.type.startsWith('image/')) { setError('画像ファイルを選択してください'); return }
-    if (f.size > 10 * 1024 * 1024) { setError('10MB以下の画像を選択してください'); return }
+    if (f.size > 4 * 1024 * 1024) { setError('4MB以下の画像を選択してください'); return }
     setFile(f)
     setPreview(URL.createObjectURL(f))
     setError(null)
@@ -32,15 +32,20 @@ export function UploadForm() {
     const formData = new FormData()
     formData.append('file', file)
 
-    const res = await fetch('/api/posts', { method: 'POST', body: formData })
-    if (!res.ok) {
-      const d = await res.json()
-      setError(d.error ?? 'アップロードに失敗しました')
+    try {
+      const res = await fetch('/api/posts', { method: 'POST', body: formData })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        setError(d.error ?? `アップロード失敗 (${res.status})`)
+        setUploading(false)
+        return
+      }
+      router.push('/')
+      router.refresh()
+    } catch {
+      setError('ネットワークエラー。再試行してください。')
       setUploading(false)
-      return
     }
-    router.push('/')
-    router.refresh()
   }
 
   return (
@@ -60,7 +65,7 @@ export function UploadForm() {
               <ImageIcon size={28} strokeWidth={1.5} className="text-white" />
             </div>
             <p className="text-sm font-medium">スクリーンショットを選択</p>
-            <p className="text-xs text-muted">PNG / JPG・10MB以下</p>
+            <p className="text-xs text-muted">PNG / JPG・4MB以下</p>
           </div>
         )}
       </div>

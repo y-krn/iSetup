@@ -8,6 +8,8 @@ import { lookupApps } from '@/lib/app-store'
 
 const BUCKET = 'screenshots'
 
+export const maxDuration = 60
+
 export async function GET(req: NextRequest) {
   const admin = createAdminClient()
   const { searchParams } = new URL(req.url)
