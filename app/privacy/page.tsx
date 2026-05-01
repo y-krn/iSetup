@@ -72,7 +72,7 @@ export default function PrivacyPage() {
 
       <Section title="9. お問い合わせ">
         <p className="text-sm">
-          メール: <a href="mailto:kirino.yohei@gmail.com" className="text-accent hover:underline">kirino.yohei@gmail.com</a>
+          メール: <a href="mailto:contact@isetup.app" className="text-accent hover:underline">contact@isetup.app</a>
         </p>
       </Section>
     </article>
