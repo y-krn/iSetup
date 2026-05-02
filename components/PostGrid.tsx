@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { ImagePlus, SearchX } from 'lucide-react'
 import { PostCard } from './PostCard'
 
 type Post = {
@@ -49,8 +50,18 @@ export function PostGrid({ initialPosts, tag, theme, showEdit }: Props) {
 
   if (posts.length === 0) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        <p>まだ投稿がありません</p>
+      <div className="gallery-shelf rounded-[2.25rem] px-6 py-16 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-accent/10 text-accent">
+          {tag || theme ? <SearchX size={28} /> : <ImagePlus size={28} />}
+        </div>
+        <h2 className="mt-5 text-xl font-black">
+          {tag || theme ? '条件に合う投稿がありません' : 'まだ投稿がありません'}
+        </h2>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
+          {tag || theme
+            ? '別のアプリ、ウィジェット、テーマで探してみてください。'
+            : '最初のホーム画面が投稿されると、ここにギャラリーとして並びます。'}
+        </p>
       </div>
     )
   }

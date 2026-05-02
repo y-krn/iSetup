@@ -36,8 +36,8 @@ export default async function PostPage({ params }: Props) {
       <BackButton fallback="/" variant="text" />
 
       <div className="grid gap-6 md:grid-cols-[minmax(270px,0.78fr)_minmax(0,1fr)] md:items-start">
-        <section className="gallery-shelf rounded-[2.25rem] p-4 sm:p-5 md:sticky md:top-20">
-          <div className="relative mx-auto max-w-[18rem] lg:max-w-sm">
+        <section className="gallery-shelf order-2 rounded-[2.25rem] p-4 sm:p-5 md:order-none md:sticky md:top-20">
+          <div className="relative mx-auto max-w-[15.5rem] sm:max-w-[18rem] lg:max-w-sm">
             <div className="phone-frame relative aspect-[9/19.5] overflow-hidden rounded-[2.85rem] p-[9px]">
               <div className="relative h-full overflow-hidden rounded-[2.32rem] bg-black">
                 <Image
@@ -63,14 +63,14 @@ export default async function PostPage({ params }: Props) {
           </div>
         </section>
 
-        <section className="space-y-5">
+        <section className="order-1 space-y-5 md:order-none">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
               <Smartphone size={13} />
               Setup Profile
             </div>
             <div className="space-y-2">
-              <h1 className="text-3xl sm:text-4xl font-black leading-tight">
+              <h1 className="text-2xl sm:text-4xl font-black leading-tight">
                 {theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'iOS'} home setup
               </h1>
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
@@ -85,15 +85,15 @@ export default async function PostPage({ params }: Props) {
 
           <div className="grid grid-cols-3 gap-2">
             <div className="gallery-caption rounded-2xl p-3">
-              <div className="text-2xl font-black">{appCount}</div>
+              <div className="text-xl sm:text-2xl font-black">{appCount}</div>
               <div className="text-[11px] font-semibold text-muted">Apps</div>
             </div>
             <div className="gallery-caption rounded-2xl p-3">
-              <div className="text-2xl font-black">{widgets.length}</div>
+              <div className="text-xl sm:text-2xl font-black">{widgets.length}</div>
               <div className="text-[11px] font-semibold text-muted">Widgets</div>
             </div>
             <div className="gallery-caption rounded-2xl p-3">
-              <div className="text-2xl font-black">{colors.length}</div>
+              <div className="text-xl sm:text-2xl font-black">{colors.length}</div>
               <div className="text-[11px] font-semibold text-muted">Colors</div>
             </div>
           </div>
