@@ -150,7 +150,7 @@ function ListEditor({
           className="h-11 text-sm pl-9 rounded-full gallery-caption border-0 bg-transparent"
         />
         {showDropdown && input.trim() && (
-          <div className="absolute z-[60] left-0 right-0 mt-2 rounded-3xl gallery-shelf shadow-2xl max-h-80 overflow-y-auto overscroll-contain">
+          <div className="absolute z-[60] left-0 right-0 mt-2 max-h-80 overflow-y-auto overscroll-contain rounded-3xl border border-black/10 bg-[rgb(var(--surface))] shadow-[0_24px_70px_-24px_rgba(0,0,0,0.45)] dark:border-white/10">
             {loading && (
               <div className="flex items-center gap-2 text-xs text-muted px-4 py-4">
                 <Loader2 size={14} className="animate-spin" />
@@ -167,7 +167,7 @@ function ListEditor({
                     <button
                       type="button"
                       onClick={() => addCandidate(c)}
-                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-white/35 active:bg-white/45 text-left transition-colors"
+                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-accent/10 active:bg-accent/15 text-left transition-colors"
                     >
                       <Image
                         src={c.icon}
