@@ -5,9 +5,11 @@ import { useSearchParams } from 'next/navigation'
 import { Mail, Send, CheckCircle2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-export function LoginForm() {
+type Props = { nextOverride?: string }
+
+export function LoginForm({ nextOverride }: Props = {}) {
   const searchParams = useSearchParams()
-  const next = searchParams.get('next') ?? '/me'
+  const next = nextOverride ?? searchParams.get('next') ?? '/me'
 
   const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
