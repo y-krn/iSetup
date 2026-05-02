@@ -2,20 +2,28 @@
 
 import { createClient } from '@/lib/supabase/client'
 
+let cached: Promise<string | null> | null = null
+
 /**
- * 匿名サインイン (idempotent)。LikeButton用。
+ * 匿名サインイン (idempotent + race-safe)。LikeButton用。
+ * 並列呼出は同一 Promise を共有 → signup 1回のみ。
  */
 export async function ensureAnonymousUser(): Promise<string | null> {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (user) return user.id
-
-  const { data, error } = await supabase.auth.signInAnonymously()
-  if (error) {
-    console.error('signInAnonymously failed:', error)
-    return null
-  }
-  return data.user?.id ?? null
+  if (cached) return cached
+  cached = (async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) return user.id
+    const { data, error } = await supabase.auth.signInAnonymously()
+    if (error) {
+      console.error('signInAnonymously failed:', error)
+      return null
+    }
+    return data.user?.id ?? null
+  })()
+  const result = await cached
+  if (result === null) cached = null
+  return result
 }
 
 /**
