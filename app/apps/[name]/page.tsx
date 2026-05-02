@@ -1,10 +1,8 @@
 import Image from 'next/image'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ExternalLink, Star } from 'lucide-react'
+import { ExternalLink, Images, LayoutGrid, Star } from 'lucide-react'
 import { BackButton } from '@/components/BackButton'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { lookupApp } from '@/lib/app-store'
 import { PostGrid } from '@/components/PostGrid'
 
 type Props = { params: Promise<{ name: string }> }
@@ -79,74 +77,100 @@ export default async function AppPage({ params }: Props) {
       <BackButton variant="text" />
 
       {info ? (
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
-          <div className="flex items-start gap-4">
-            <Image
-              src={info.artworkUrl512 ?? info.artworkUrl100}
-              alt={info.trackName}
-              width={96}
-              height={96}
-              className="rounded-2xl shadow-md"
-              unoptimized
-            />
-            <div className="flex-1 min-w-0">
-              <h1 className="font-semibold text-lg leading-tight">{info.trackName}</h1>
-              <p className="text-sm text-gray-500 truncate">{info.artistName}</p>
-              {info.primaryGenreName && (
-                <p className="text-xs text-gray-400 mt-1">{info.primaryGenreName}</p>
-              )}
-              {info.averageUserRating !== undefined && info.userRatingCount !== undefined && info.userRatingCount > 0 && (
-                <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
-                  <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                  <span>{info.averageUserRating.toFixed(1)}</span>
-                  <span className="text-gray-400">({info.userRatingCount.toLocaleString()})</span>
+        <section className="gallery-shelf overflow-hidden rounded-[2.25rem] p-4 sm:p-5 lg:min-h-[420px]">
+          <div className="grid gap-5 md:grid-cols-[auto_minmax(0,1fr)] md:items-start">
+            <div className="relative w-28 sm:w-32">
+              <div className="absolute -inset-4 rounded-[2rem] bg-accent/10 blur-2xl" />
+              <Image
+                src={info.artworkUrl512 ?? info.artworkUrl100}
+                alt={info.trackName}
+                width={128}
+                height={128}
+                className="relative rounded-[1.75rem] shadow-2xl ring-1 ring-black/5"
+                unoptimized
+              />
+            </div>
+
+            <div className="min-w-0 space-y-4">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
+                  <LayoutGrid size={13} />
+                  App Profile
                 </div>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-black leading-tight">{info.trackName}</h1>
+                  <p className="mt-1 truncate text-sm font-semibold text-muted">{info.artistName}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {info.primaryGenreName && (
+                  <span className="gallery-caption rounded-full px-3 py-1 text-xs font-semibold">{info.primaryGenreName}</span>
+                )}
+                {info.averageUserRating !== undefined && info.userRatingCount !== undefined && info.userRatingCount > 0 && (
+                  <span className="gallery-caption inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold">
+                    <Star size={12} className="fill-amber-400 text-amber-400" />
+                    {info.averageUserRating.toFixed(1)}
+                    <span className="text-muted">({info.userRatingCount.toLocaleString()})</span>
+                  </span>
+                )}
+                {info.formattedPrice && (
+                  <span className="gallery-caption rounded-full px-3 py-1 text-xs font-semibold">{info.formattedPrice}</span>
+                )}
+              </div>
+
+              {info.description && (
+                <p className="max-w-2xl whitespace-pre-line text-sm leading-relaxed text-muted line-clamp-5">
+                  {info.description}
+                </p>
               )}
+
+              <a
+                href={info.trackViewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-950/10 transition-all hover:bg-accent-strong hover:scale-[1.01] active:scale-95"
+              >
+                <ExternalLink size={14} />
+                App Storeで開く
+              </a>
             </div>
           </div>
 
-          <a
-            href={info.trackViewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full bg-blue-500 text-white py-2.5 rounded-xl font-medium text-sm hover:bg-blue-600 transition-colors"
-          >
-            <ExternalLink size={14} />
-            App Storeで開く
-            {info.formattedPrice && <span className="text-blue-200">· {info.formattedPrice}</span>}
-          </a>
-
-          {info.description && (
-            <p className="text-sm text-gray-600 leading-relaxed line-clamp-6 whitespace-pre-line">
-              {info.description}
-            </p>
-          )}
-
           {info.screenshotUrls && info.screenshotUrls.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto -mx-4 px-4 pb-2">
-              {info.screenshotUrls.slice(0, 5).map((url, i) => (
-                <Image
-                  key={url}
-                  src={url}
-                  alt={`screenshot ${i + 1}`}
-                  width={150}
-                  height={325}
-                  className="rounded-xl shadow-sm flex-shrink-0"
-                  unoptimized
-                />
-              ))}
+            <div className="mt-6 space-y-3">
+              <h2 className="flex items-center gap-2 text-xs font-bold text-muted uppercase tracking-[0.16em]">
+                <Images size={14} />
+                App Store Screens
+              </h2>
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {info.screenshotUrls.slice(0, 5).map((url, i) => (
+                  <Image
+                    key={url}
+                    src={url}
+                    alt={`screenshot ${i + 1}`}
+                    width={150}
+                    height={325}
+                    className="flex-shrink-0 rounded-[1.35rem] shadow-lg ring-1 ring-black/5"
+                    unoptimized
+                  />
+                ))}
+              </div>
             </div>
           )}
-        </div>
+        </section>
       ) : (
-        <div className="bg-white rounded-2xl p-6 text-center text-gray-400">
-          <h1 className="text-lg font-semibold text-gray-700 mb-2">{decodedName}</h1>
-          <p className="text-sm">App Storeで見つかりませんでした</p>
+        <div className="gallery-caption rounded-[2rem] p-8 text-center">
+          <h1 className="text-lg font-black">{decodedName}</h1>
+          <p className="mt-2 text-sm text-muted">App Storeで見つかりませんでした</p>
         </div>
       )}
 
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-gray-700">{info?.trackName ?? decodedName} を使った投稿</h2>
+      <div className="space-y-4">
+        <h2 className="flex items-center gap-2 text-xs font-bold text-muted uppercase tracking-[0.16em]">
+          <LayoutGrid size={14} />
+          {info?.trackName ?? decodedName} を使った投稿
+        </h2>
         <PostGrid initialPosts={posts ?? []} tag={decodedName} />
       </div>
     </div>

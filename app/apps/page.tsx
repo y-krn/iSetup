@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { Sparkles, Trophy } from 'lucide-react'
 import { extractTrackId } from '@/lib/app-store'
 import { getPopularApps } from '@/lib/popular-apps'
 
@@ -9,42 +10,61 @@ export default async function AppsPage() {
   const apps = await getPopularApps(60)
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">人気のアプリ</h1>
-        <p className="text-sm text-muted">投稿で多く使われているアプリ順</p>
+    <div className="space-y-6">
+      <div className="max-w-3xl space-y-3">
+        <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
+          <Trophy size={13} />
+          App Index
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-black leading-tight">人気のアプリ</h1>
+          <p className="max-w-xl text-sm text-muted leading-relaxed">
+            みんなのホーム画面でよく使われているアプリを、投稿数順に並べています。
+          </p>
+        </div>
       </div>
 
       {apps.length === 0 ? (
-        <div className="text-center py-20 text-muted">まだデータがありません</div>
+        <div className="gallery-caption rounded-[2rem] py-20 text-center text-muted">まだデータがありません</div>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {apps.map((app, i) => {
             const slug = app.info ? (extractTrackId(app.info.url) ?? app.info.trackName) : app.name
             const display = app.info?.trackName ?? app.name
-            const rankColor = i < 3 ? 'text-amber-500 font-bold' : 'text-muted'
+            const featured = i < 3
             return (
-              <li key={app.name}>
+              <li key={app.name} className={featured ? 'lg:col-span-1' : ''}>
                 <Link
                   href={`/apps/${encodeURIComponent(slug)}`}
-                  className="flex items-center gap-3 p-2.5 rounded-2xl glass hover:scale-[1.02] active:scale-95 transition-transform"
+                  className={`group flex h-full items-center gap-3 rounded-[1.75rem] p-3 transition duration-300 hover:-translate-y-1 active:scale-[0.98] ${
+                    featured ? 'gallery-shelf' : 'gallery-caption'
+                  }`}
                 >
-                  <span className={`text-sm w-6 text-center ${rankColor}`}>{i + 1}</span>
-                  {app.info?.icon ? (
-                    <Image
-                      src={app.info.icon}
-                      alt={display}
-                      width={48}
-                      height={48}
-                      className="rounded-xl flex-shrink-0 shadow-md ring-1 ring-black/5"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-white/30 flex items-center justify-center text-xs text-muted">?</div>
-                  )}
+                  <div className="relative flex-shrink-0">
+                    {app.info?.icon ? (
+                      <Image
+                        src={app.info.icon}
+                        alt={display}
+                        width={featured ? 58 : 50}
+                        height={featured ? 58 : 50}
+                        className="rounded-[1.05rem] shadow-lg ring-1 ring-black/5 transition-transform duration-300 group-hover:scale-105"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-[50px] w-[50px] items-center justify-center rounded-[1.05rem] bg-white/30 text-xs text-muted">?</div>
+                    )}
+                    <span className={`absolute -left-2 -top-2 flex h-7 min-w-7 items-center justify-center rounded-full px-1.5 text-[11px] font-black shadow-sm ${
+                      featured ? 'bg-accent text-white' : 'gallery-caption text-muted'
+                    }`}>
+                      {i + 1}
+                    </span>
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm font-semibold truncate">{display}</div>
-                    <div className="text-xs text-muted">{app.use_count}件の投稿</div>
+                    <div className="truncate text-sm font-black">{display}</div>
+                    <div className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-muted">
+                      <Sparkles size={12} />
+                      {app.use_count}件の投稿
+                    </div>
                   </div>
                 </Link>
               </li>
