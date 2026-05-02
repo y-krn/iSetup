@@ -12,7 +12,7 @@ export function AppLink({ name, info }: Props) {
   return (
     <Link
       href={`/apps/${encodeURIComponent(slug)}`}
-      className="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full glass-soft text-xs font-medium hover:scale-105 active:scale-95 transition-transform"
+      className="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full gallery-caption text-xs font-semibold hover:-translate-y-0.5 active:scale-95 transition-transform"
     >
       {info ? (
         <Image
