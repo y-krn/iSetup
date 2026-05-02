@@ -56,13 +56,13 @@ export function PostCard({ post, priority, showEdit, featured }: Props) {
         </div>
       </Link>
 
-      <div className="px-1.5 pt-3 flex items-center justify-between">
+      <div className="px-1.5 pt-3 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <LikeButton postId={post.id} initialCount={post.like_count} />
           <span className="text-[11px] font-medium text-muted">{date}</span>
         </div>
         {showEdit && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <EditButton postId={post.id} ownerAnonId={post.anon_user_id} />
             <DeleteButton postId={post.id} ownerAnonId={post.anon_user_id} />
           </div>

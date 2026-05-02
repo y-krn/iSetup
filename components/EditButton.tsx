@@ -20,10 +20,11 @@ export function EditButton({ postId, ownerAnonId }: Props) {
   return (
     <Link
       href={`/posts/${postId}/edit`}
-      className="flex items-center justify-center w-8 h-8 rounded-full glass-soft text-muted hover:text-indigo-500 hover:scale-105 active:scale-90 transition-all"
+      className="gallery-caption flex h-9 w-9 items-center justify-center rounded-full text-muted transition-all hover:-translate-y-0.5 hover:text-accent active:scale-90"
+      aria-label="編集"
       title="編集"
     >
-      <Pencil size={13} />
+      <Pencil size={14} />
     </Link>
   )
 }
