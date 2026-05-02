@@ -1,12 +1,16 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LogOut } from 'lucide-react'
+import { Loader2, LogOut } from 'lucide-react'
 
 export function SignOutButton() {
   const router = useRouter()
+  const [signingOut, setSigningOut] = useState(false)
 
   async function onClick() {
+    if (signingOut) return
+    setSigningOut(true)
     await fetch('/api/auth/signout', { method: 'POST' })
     router.push('/')
     router.refresh()
@@ -15,11 +19,12 @@ export function SignOutButton() {
   return (
     <button
       onClick={onClick}
-      className="flex items-center justify-center w-9 h-9 rounded-full glass-soft hover:scale-105 active:scale-95 hover:text-red-500 text-muted transition-all"
+      disabled={signingOut}
+      className="gallery-caption flex h-9 w-9 items-center justify-center rounded-full text-muted transition-all hover:-translate-y-0.5 hover:text-danger active:scale-90 disabled:opacity-50"
       aria-label="ログアウト"
       title="ログアウト"
     >
-      <LogOut size={16} />
+      {signingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
     </button>
   )
 }
