@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Grid2X2, Heart, ImagePlus, UserRound } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 import { PostGrid } from '@/components/PostGrid'
@@ -40,28 +41,41 @@ export default async function MyPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">マイページ</h1>
+    <div className="space-y-6">
+      <div className="max-w-3xl space-y-3">
+        <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
+          <UserRound size={13} />
+          My Gallery
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-black leading-tight">マイページ</h1>
+          <p className="max-w-xl text-sm text-muted leading-relaxed">
+            自分の投稿と、あとで見返したいホーム画面をまとめて確認できます。
+          </p>
+        </div>
+      </div>
 
-      <div className="glass-soft rounded-full p-1 inline-flex">
+      <div className="gallery-caption rounded-full p-1 inline-flex">
         <Link
           href="/me"
-          className={`px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
+          className={`inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-full transition-all ${
             activeTab === 'mine'
-              ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-md'
+              ? 'bg-accent text-white shadow-md'
               : 'text-muted hover:text-foreground'
           }`}
         >
+          <Grid2X2 size={14} />
           自分の投稿
         </Link>
         <Link
           href="/me?tab=liked"
-          className={`px-5 py-1.5 text-sm font-medium rounded-full transition-all ${
+          className={`inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold rounded-full transition-all ${
             activeTab === 'liked'
-              ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white shadow-md'
+              ? 'bg-accent text-white shadow-md'
               : 'text-muted hover:text-foreground'
           }`}
         >
+          <Heart size={14} />
           いいね
         </Link>
       </div>
@@ -69,12 +83,21 @@ export default async function MyPage({ searchParams }: Props) {
       {posts.length > 0 ? (
         <PostGrid initialPosts={posts as never} showEdit={activeTab === 'mine'} />
       ) : (
-        <div className="text-center py-20 space-y-4">
-          <p className="text-muted">
+        <div className="gallery-shelf rounded-[2.25rem] px-6 py-16 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-accent/10 text-accent">
+            {activeTab === 'mine' ? <ImagePlus size={28} /> : <Heart size={28} />}
+          </div>
+          <h2 className="mt-5 text-xl font-black">
             {activeTab === 'mine' ? 'まだ投稿がありません' : 'まだいいねがありません'}
+          </h2>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
+            {activeTab === 'mine'
+              ? 'お気に入りのホーム画面を投稿すると、ここに自分だけのギャラリーが育っていきます。'
+              : '気になるセットアップにハートを付けると、ここからすぐ見返せます。'}
           </p>
           {activeTab === 'mine' && (
-            <Link href="/upload" className="inline-block px-5 py-2.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/25">
+            <Link href="/upload" className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-accent shadow-lg shadow-emerald-950/10 hover:bg-accent-strong hover:scale-[1.01] active:scale-95 transition-all">
+              <ImagePlus size={16} />
               ホーム画面を投稿する
             </Link>
           )}

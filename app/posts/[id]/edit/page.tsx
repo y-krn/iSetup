@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { SlidersHorizontal } from 'lucide-react'
 import { BackButton } from '@/components/BackButton'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getAuthenticatedUser } from '@/lib/auth-server'
@@ -18,10 +18,19 @@ export default async function EditPostPage({ params }: Props) {
   const tags = post.extracted_tags ?? {}
 
   return (
-    <div className="max-w-sm mx-auto space-y-6">
-      <div className="flex items-center gap-3">
-        <BackButton fallback={`/posts/${id}`} />
-        <h1 className="text-2xl font-bold tracking-tight">タグを編集</h1>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div className="space-y-3">
+        <BackButton fallback={`/posts/${id}`} variant="text" />
+        <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
+          <SlidersHorizontal size={13} />
+          Setup Editor
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl sm:text-4xl font-black leading-tight">タグを編集</h1>
+          <p className="max-w-xl text-sm text-muted leading-relaxed">
+            AIが読み取ったアプリ、Dock、ウィジェット、テーマを手直しできます。
+          </p>
+        </div>
       </div>
 
       <EditTagsForm

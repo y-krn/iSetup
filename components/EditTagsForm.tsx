@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { X, Search, Save } from 'lucide-react'
+import { Loader2, Search, Save, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { getCurrentUserId } from '@/lib/auth'
 
@@ -100,27 +100,27 @@ function ListEditor({
   }
 
   return (
-    <div className={`space-y-2 ${showDropdown && input.trim() ? 'relative z-50' : ''}`}>
-      <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</h2>
-      <div className="flex flex-wrap gap-2">
+    <section className={`gallery-caption rounded-[2rem] p-4 sm:p-5 space-y-3 ${showDropdown && input.trim() ? 'relative z-50' : ''}`}>
+      <h2 className="text-xs font-bold text-muted uppercase tracking-[0.16em]">{label}</h2>
+      <div className="flex flex-wrap gap-2 min-h-9">
         {items.map((item, i) => {
           const display = links[item]?.trackName ?? item
           return (
             <span
               key={`${item}-${i}`}
-              className="inline-flex items-center gap-2 bg-white border border-gray-200 pl-2 pr-1 py-1.5 rounded-full text-xs shadow-sm hover:shadow transition-shadow"
+              className="inline-flex items-center gap-2 gallery-caption pl-1 pr-1 py-1 rounded-full text-xs shadow-sm transition-transform hover:-translate-y-0.5"
               title={item}
             >
               {links[item]?.icon ? (
                 <Image src={links[item].icon} alt="" width={22} height={22} className="rounded-md shadow-sm" unoptimized />
               ) : (
-                <span className="w-[22px] h-[22px] rounded-md bg-gray-100 flex items-center justify-center text-[8px] text-gray-400">?</span>
+                <span className="w-[22px] h-[22px] rounded-md bg-white/40 flex items-center justify-center text-[8px] text-muted">?</span>
               )}
-              <span className="max-w-[180px] truncate font-medium text-gray-800">{display}</span>
+              <span className="max-w-[180px] truncate font-semibold text-foreground">{display}</span>
               <button
                 type="button"
                 onClick={() => remove(i)}
-                className="w-7 h-7 -my-1 rounded-full hover:bg-red-50 active:bg-red-100 flex items-center justify-center text-gray-400 hover:text-red-500 transition-colors"
+                className="w-7 h-7 -my-1 rounded-full hover:bg-danger/10 active:bg-danger/15 flex items-center justify-center text-muted hover:text-danger transition-colors"
                 aria-label="削除"
               >
                 <X size={16} strokeWidth={2.5} />
@@ -130,7 +130,7 @@ function ListEditor({
         })}
       </div>
       <div ref={containerRef} className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
         <Input
           value={input}
           onChange={e => { setInput(e.target.value); setShowDropdown(true) }}
@@ -147,18 +147,18 @@ function ListEditor({
             }
           }}
           placeholder={placeholder}
-          className="h-9 text-sm pl-9"
+          className="h-11 text-sm pl-9 rounded-full gallery-caption border-0 bg-transparent"
         />
         {showDropdown && input.trim() && (
-          <div className="absolute z-[60] left-0 right-0 mt-2 rounded-2xl bg-white shadow-2xl ring-1 ring-black/10 max-h-80 overflow-y-auto overscroll-contain">
+          <div className="absolute z-[60] left-0 right-0 mt-2 rounded-3xl gallery-shelf shadow-2xl max-h-80 overflow-y-auto overscroll-contain">
             {loading && (
-              <div className="flex items-center gap-2 text-xs text-gray-400 px-4 py-4">
-                <span className="w-3 h-3 rounded-full border-2 border-gray-200 border-t-gray-500 animate-spin" />
+              <div className="flex items-center gap-2 text-xs text-muted px-4 py-4">
+                <Loader2 size={14} className="animate-spin" />
                 検索中...
               </div>
             )}
             {!loading && candidates.length === 0 && (
-              <div className="text-xs text-gray-400 px-4 py-6 text-center">候補なし</div>
+              <div className="text-xs text-muted px-4 py-6 text-center">候補なし</div>
             )}
             {!loading && candidates.length > 0 && (
               <ul className="py-1">
@@ -167,7 +167,7 @@ function ListEditor({
                     <button
                       type="button"
                       onClick={() => addCandidate(c)}
-                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-gray-50 active:bg-gray-100 text-left transition-colors"
+                      className="flex items-center gap-3 w-full px-3 py-2.5 hover:bg-white/35 active:bg-white/45 text-left transition-colors"
                     >
                       <Image
                         src={c.icon}
@@ -178,11 +178,11 @@ function ListEditor({
                         unoptimized
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-900 truncate">{c.trackName}</div>
-                        <div className="text-xs text-gray-500 truncate mt-0.5">{c.artistName}</div>
+                        <div className="text-sm font-semibold text-foreground truncate">{c.trackName}</div>
+                        <div className="text-xs text-muted truncate mt-0.5">{c.artistName}</div>
                       </div>
                     </button>
-                    {i < candidates.length - 1 && <div className="ml-[68px] border-t border-gray-100" />}
+                    {i < candidates.length - 1 && <div className="ml-[68px] border-t border-black/5 dark:border-white/10" />}
                   </li>
                 ))}
               </ul>
@@ -190,7 +190,7 @@ function ListEditor({
           </div>
         )}
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -219,8 +219,14 @@ export function EditTagsForm({
     getCurrentUserId().then(uid => setAuthorized(uid === ownerAnonId))
   }, [ownerAnonId])
 
-  if (authorized === null) return null
-  if (!authorized) return <p className="text-sm text-red-500">編集権限なし</p>
+  if (authorized === null) {
+    return (
+      <div className="gallery-caption rounded-[2rem] p-6 text-sm text-muted">
+        権限を確認しています...
+      </div>
+    )
+  }
+  if (!authorized) return <p className="gallery-caption rounded-[2rem] p-5 text-sm font-semibold text-danger">編集権限なし</p>
 
   async function onSave() {
     setSaving(true)
@@ -253,33 +259,33 @@ export function EditTagsForm({
       <ListEditor label="Dock" items={dockApps} setItems={setDockApps} placeholder="Dockアプリを検索して追加" links={appLinks} setLinks={setAppLinks} />
       <ListEditor label="ウィジェット" items={widgets} setItems={setWidgets} placeholder="ウィジェットの提供アプリを検索" links={widgetLinks} setLinks={setWidgetLinks} />
 
-      <div className="space-y-2">
-        <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wide">テーマ</h2>
-        <div className="flex gap-2">
+      <section className="gallery-caption rounded-[2rem] p-4 sm:p-5 space-y-3">
+        <h2 className="text-xs font-bold text-muted uppercase tracking-[0.16em]">テーマ</h2>
+        <div className="flex flex-wrap gap-2">
           {(['dark', 'light', ''] as const).map(t => (
             <button
               key={t || 'none'}
               type="button"
               onClick={() => setTheme(t)}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                theme === t ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                theme === t ? 'bg-accent text-white shadow-md' : 'gallery-caption text-muted hover:text-foreground'
               }`}
             >
               {t || '未指定'}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && <p className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">{error}</p>}
 
       <button
         type="button"
         onClick={onSave}
         disabled={saving}
-        className="w-full flex items-center justify-center gap-2 h-12 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+        className="w-full flex items-center justify-center gap-2 h-12 rounded-full text-sm font-semibold text-white bg-accent shadow-lg shadow-emerald-950/10 hover:bg-accent-strong hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
       >
-        <Save size={16} />
+        {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
         {saving ? '保存中...' : '保存'}
       </button>
     </div>
