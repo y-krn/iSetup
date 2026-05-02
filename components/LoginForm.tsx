@@ -39,13 +39,13 @@ export function LoginForm({ nextOverride }: Props = {}) {
 
   if (sent) {
     return (
-      <div className="glass rounded-2xl p-5 space-y-3">
+      <div className="gallery-caption rounded-3xl p-5 space-y-3">
         <div className="flex items-center gap-2 text-emerald-500">
           <CheckCircle2 size={20} />
-          <span className="font-semibold">メール送信完了</span>
+          <span className="font-bold">メール送信完了</span>
         </div>
-        <p className="text-sm leading-relaxed">
-          <span className="font-medium">{email}</span> 宛にログインリンクを送信。受信箱を確認してリンクをタップ。
+        <p className="text-sm leading-relaxed text-muted">
+          <span className="font-semibold text-foreground">{email}</span> 宛にログインリンクを送信。受信箱を確認してリンクをタップ。
         </p>
         <p className="text-xs text-muted">
           届かない場合は迷惑メールフォルダを確認。
@@ -65,10 +65,10 @@ export function LoginForm({ nextOverride }: Props = {}) {
           value={email}
           onChange={e => setEmail(e.target.value)}
           placeholder="メールアドレス"
-          className="w-full pl-11 pr-4 h-12 rounded-full glass text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-indigo-400/50 transition-shadow"
+          className="w-full pl-11 pr-4 h-12 rounded-full gallery-caption text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/35 transition-shadow"
         />
       </div>
-      {error && <p className="text-rose-500 text-sm font-medium">{error}</p>}
+      {error && <p className="rounded-2xl bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">{error}</p>}
       <button
         type="submit"
         disabled={!email.trim() || sending}
