@@ -24,7 +24,7 @@ export function PostCard({ post, priority, showEdit }: Props) {
   return (
     <div className="group">
       {/* iPhone frame */}
-      <Link href={`/posts/${post.id}`} className="block">
+      <Link href={`/posts/${post.id}`} prefetch={false} className="block">
         <div className="relative aspect-[9/19.5] rounded-[2.5rem] overflow-hidden bg-black shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] ring-[3px] ring-black ring-offset-1 ring-offset-black/40 transition-transform duration-300 hover:-translate-y-1 active:scale-[0.98]">
           <Image
             src={post.image_url}
