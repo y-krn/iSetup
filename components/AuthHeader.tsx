@@ -34,7 +34,7 @@ export async function AuthHeader() {
       <Link
         href="/upload"
         prefetch={false}
-        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 transition-all"
+        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold text-white bg-accent shadow-lg shadow-emerald-950/10 hover:bg-accent-strong hover:scale-105 active:scale-95 transition-all"
       >
         <Upload size={14} />
         投稿

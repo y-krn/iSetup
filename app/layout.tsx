@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
               <Link
                 href="/"
-                className="font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-fuchsia-500 dark:from-indigo-300 dark:to-fuchsia-300 bg-clip-text text-transparent"
+                className="font-black text-lg text-foreground"
               >
                 iSetup.app
               </Link>

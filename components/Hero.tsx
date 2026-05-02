@@ -4,7 +4,7 @@ export function Hero() {
       <p className="text-[11px] font-bold tracking-[0.2em] text-accent uppercase">
         Home Screen Insights
       </p>
-      <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.05]">
+      <h1 className="text-4xl sm:text-5xl font-black leading-[1.05]">
         みんなの<br />ホーム画面、<br />覗き見。
       </h1>
       <p className="text-sm text-muted leading-relaxed max-w-xs">

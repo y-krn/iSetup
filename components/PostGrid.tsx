@@ -57,9 +57,15 @@ export function PostGrid({ initialPosts, tag, theme, showEdit }: Props) {
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 max-w-md sm:max-w-none mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5 sm:gap-6 max-w-md sm:max-w-none mx-auto">
         {posts.map((post, i) => (
-          <PostCard key={post.id} post={post} priority={i < 3} showEdit={showEdit} />
+          <PostCard
+            key={post.id}
+            post={post}
+            priority={i < 3}
+            showEdit={showEdit}
+            featured={!showEdit && i === 0 && !tag && !theme}
+          />
         ))}
       </div>
       <div ref={sentinelRef} className="h-4" />
