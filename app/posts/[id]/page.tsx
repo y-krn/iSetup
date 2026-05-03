@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { LikeButton } from '@/components/LikeButton'
 import { TagBadge } from '@/components/TagBadge'
 import { AppLink } from '@/components/AppLink'
+import { ShareButton } from '@/components/ShareButton'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -37,6 +38,8 @@ export default async function PostPage({ params, searchParams }: Props) {
     day: 'numeric',
   }).format(new Date(post.created_at))
   const appCount = apps.length + dockApps.length
+  const shareTitle = `iSetup: ${screenLabel}`
+  const shareText = `iSetupで${isLockScreen ? 'ロック画面' : 'ホーム画面'}のセットアップを見てみる`
 
   return (
     <div className="space-y-6">
@@ -101,6 +104,7 @@ export default async function PostPage({ params, searchParams }: Props) {
                   {createdAt}
                 </span>
                 <LikeButton postId={post.id} initialCount={post.like_count} />
+                <ShareButton title={shareTitle} text={shareText} />
               </div>
             </div>
           </div>
