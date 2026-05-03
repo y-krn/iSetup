@@ -11,46 +11,68 @@ export function LikeButton({ postId, initialCount }: Props) {
   const [count, setCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
   const [animate, setAnimate] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     ensureAnonymousUser().then(() => {
       fetch(`/api/likes?postId=${postId}`)
         .then(r => r.json())
         .then(d => setLiked(d.liked))
+        .catch(() => {})
     })
   }, [postId])
 
   async function toggle() {
     if (loading) return
-    await ensureAnonymousUser()
+    setError(null)
+    const userId = await ensureAnonymousUser()
+    if (!userId) {
+      setError('失敗')
+      return
+    }
+
     setLoading(true)
+    const previousLiked = liked
+    const previousCount = count
     const optimisticLiked = !liked
     setLiked(optimisticLiked)
-    setCount(c => c + (optimisticLiked ? 1 : -1))
+    setCount(Math.max(0, count + (optimisticLiked ? 1 : -1)))
     if (optimisticLiked) {
       setAnimate(true)
       setTimeout(() => setAnimate(false), 400)
     }
 
-    await fetch('/api/likes', {
-      method: optimisticLiked ? 'POST' : 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ postId }),
-    })
-    setLoading(false)
+    try {
+      const res = await fetch('/api/likes', {
+        method: optimisticLiked ? 'POST' : 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ postId }),
+      })
+      if (!res.ok) throw new Error('like failed')
+    } catch {
+      setLiked(previousLiked)
+      setCount(previousCount)
+      setError('失敗')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <button
-      onClick={toggle}
-      className="flex items-center gap-1.5 text-sm transition-colors active:scale-90"
-      aria-label="like"
-    >
-      <Heart
-        size={18}
-        className={`transition-all ${liked ? 'fill-rose-500 text-rose-500' : 'text-muted'} ${animate ? 'scale-125' : 'scale-100'}`}
-      />
-      <span className={`text-xs font-medium ${liked ? 'text-rose-500' : 'text-muted'}`}>{count}</span>
-    </button>
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={toggle}
+        disabled={loading}
+        className="flex items-center gap-1.5 text-sm transition-colors active:scale-90 disabled:opacity-60"
+        aria-label="like"
+      >
+        <Heart
+          size={18}
+          className={`transition-all ${liked ? 'fill-rose-500 text-rose-500' : 'text-muted'} ${animate ? 'scale-125' : 'scale-100'}`}
+        />
+        <span className={`text-xs font-medium ${liked ? 'text-rose-500' : 'text-muted'}`}>{count}</span>
+      </button>
+      {error && <span className="text-[10px] font-semibold text-danger">{error}</span>}
+    </div>
   )
 }
