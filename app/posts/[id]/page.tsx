@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { CalendarDays, CheckCircle2, LayoutGrid, Palette, PanelBottom, Smartphone, WandSparkles } from 'lucide-react'
@@ -11,6 +12,57 @@ import { ShareButton } from '@/components/ShareButton'
 type Props = {
   params: Promise<{ id: string }>
   searchParams: Promise<{ posted?: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  const supabase = createAdminClient()
+  const { data: post } = await supabase
+    .from('posts')
+    .select('id, image_url, extracted_tags')
+    .eq('id', id)
+    .single()
+
+  if (!post) {
+    return {
+      title: '投稿が見つかりません | iSetup',
+    }
+  }
+
+  const tags = post.extracted_tags ?? {}
+  const isLockScreen = tags.screen_type === 'lock' || tags.is_lock_screen
+  const title = isLockScreen ? 'iPhoneロック画面のセットアップ | iSetup' : 'iPhoneホーム画面のセットアップ | iSetup'
+  const description = isLockScreen
+    ? 'iSetupで共有されたiPhoneロック画面のスクリーンショットです。'
+    : 'iSetupで共有されたiPhoneホーム画面のスクリーンショットです。'
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/posts/${post.id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/posts/${post.id}`,
+      siteName: 'iSetup.app',
+      locale: 'ja_JP',
+      type: 'article',
+      images: [
+        {
+          url: post.image_url,
+          alt: isLockScreen ? 'iPhone lock screen screenshot' : 'iPhone home screen screenshot',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [post.image_url],
+    },
+  }
 }
 
 export default async function PostPage({ params, searchParams }: Props) {
