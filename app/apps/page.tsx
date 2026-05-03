@@ -36,6 +36,7 @@ export default async function AppsPage() {
               <li key={app.name} className={featured ? 'lg:col-span-1' : ''}>
                 <Link
                   href={`/apps/${encodeURIComponent(slug)}`}
+                  prefetch={false}
                   className={`group flex h-full items-center gap-3 rounded-[1.75rem] p-3 transition duration-300 hover:-translate-y-1 active:scale-[0.98] ${
                     featured ? 'gallery-shelf' : 'gallery-caption'
                   }`}

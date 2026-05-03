@@ -20,6 +20,7 @@ export function EditButton({ postId, ownerAnonId }: Props) {
   return (
     <Link
       href={`/posts/${postId}/edit`}
+      prefetch={false}
       className="gallery-caption flex h-9 w-9 items-center justify-center rounded-full text-muted transition-all hover:-translate-y-0.5 hover:text-accent active:scale-90"
       aria-label="編集"
       title="編集"
