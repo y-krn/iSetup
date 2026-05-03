@@ -13,9 +13,9 @@ type Post = {
   anon_user_id: string | null
 }
 
-type Props = { initialPosts: Post[]; tag?: string; theme?: string; showEdit?: boolean }
+type Props = { initialPosts: Post[]; tag?: string; theme?: string; type?: string; showEdit?: boolean }
 
-export function PostGrid({ initialPosts, tag, theme, showEdit }: Props) {
+export function PostGrid({ initialPosts, tag, theme, type, showEdit }: Props) {
   const [posts, setPosts] = useState<Post[]>(initialPosts)
   const [cursor, setCursor] = useState<string | null>(
     initialPosts.at(-1)?.created_at ?? null
@@ -31,13 +31,14 @@ export function PostGrid({ initialPosts, tag, theme, showEdit }: Props) {
     const params = new URLSearchParams({ cursor })
     if (tag) params.set('tag', tag)
     if (theme) params.set('theme', theme)
+    if (type) params.set('type', type)
     const res = await fetch(`/api/posts?${params}`)
     const data: Post[] = await res.json()
     setPosts(p => [...p, ...data])
     setCursor(data.at(-1)?.created_at ?? null)
     setHasMore(data.length === 20)
     setLoading(false)
-  }, [loading, hasMore, cursor, tag, theme])
+  }, [loading, hasMore, cursor, tag, theme, type])
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(

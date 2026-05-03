@@ -42,7 +42,7 @@ export default async function Home({ searchParams }: Props) {
           <a href="/" className="text-muted hover:text-accent text-xs underline">クリア</a>
         </div>
       )}
-      <PostGrid initialPosts={posts ?? []} tag={tag} theme={theme} />
+      <PostGrid initialPosts={posts ?? []} tag={tag} theme={theme} type={type} />
     </div>
   )
 }
