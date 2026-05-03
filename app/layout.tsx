@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 import Link from 'next/link'
+import { Analytics } from '@vercel/analytics/next'
 import { AuthHeader } from '@/components/AuthHeader'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { AppIconBackdrop } from '@/components/AppIconBackdrop'
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
