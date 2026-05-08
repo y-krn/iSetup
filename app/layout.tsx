@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthHeader } from '@/components/AuthHeader'
 import { ThemeProvider } from '@/components/ThemeProvider'
-import { AppIconBackdrop } from '@/components/AppIconBackdrop'
 import { Footer } from '@/components/Footer'
 import './globals.css'
 
@@ -41,7 +40,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${geist.variable} antialiased`}>
         <ThemeProvider>
-          <AppIconBackdrop />
           <header className="sticky top-0 z-40 glass-soft">
             <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
               <Link

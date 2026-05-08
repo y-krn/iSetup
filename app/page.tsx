@@ -1,6 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { PostGrid } from '@/components/PostGrid'
 import { Hero } from '@/components/Hero'
+import { AppIconBackdrop } from '@/components/AppIconBackdrop'
 import { lookupApp } from '@/lib/app-store'
 import { unstable_cache } from 'next/cache'
 
@@ -43,6 +44,7 @@ export default async function Home({ searchParams }: Props) {
 
   return (
     <div className="space-y-8">
+      <AppIconBackdrop />
       {!tag && !theme && <Hero />}
       {(tag || theme) && (
         <div className="flex items-center gap-2 text-sm flex-wrap">
