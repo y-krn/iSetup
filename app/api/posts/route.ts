@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import sharp from 'sharp'
 import ExifParser from 'exif-parser'
 import { createClient } from '@/lib/supabase/server'
@@ -171,6 +172,9 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) throw error
+
+    revalidatePath('/')
+    revalidateTag('home-posts', 'max')
 
     // temp 削除 (失敗しても本処理は成功扱い)
     await admin.storage.from(BUCKET).remove([tempPath]).catch(() => {})
