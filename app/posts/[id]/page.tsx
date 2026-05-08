@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { CalendarDays, CheckCircle2, LayoutGrid, Palette, PanelBottom, Smartphone, WandSparkles } from 'lucide-react'
 import { BackButton } from '@/components/BackButton'
@@ -14,14 +15,15 @@ type Props = {
   searchParams: Promise<{ posted?: string }>
 }
 
+const getPost = cache(async (id: string) => {
+  const supabase = createAdminClient()
+  const { data: post } = await supabase.from('posts').select('*').eq('id', id).single()
+  return post
+})
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  const supabase = createAdminClient()
-  const { data: post } = await supabase
-    .from('posts')
-    .select('id, image_url, extracted_tags')
-    .eq('id', id)
-    .single()
+  const post = await getPost(id)
 
   if (!post) {
     return {
@@ -68,9 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PostPage({ params, searchParams }: Props) {
   const { id } = await params
   const { posted } = await searchParams
-  const supabase = createAdminClient()
-
-  const { data: post } = await supabase.from('posts').select('*').eq('id', id).single()
+  const post = await getPost(id)
   if (!post) notFound()
 
   const tags = post.extracted_tags ?? {}
