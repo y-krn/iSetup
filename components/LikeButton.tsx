@@ -13,8 +13,13 @@ export function LikeButton({ postId, initialCount, initialLiked }: Props) {
   const [animate, setAnimate] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // bulk fetch が完了したとき state を同期
   useEffect(() => {
-    // PostGrid から一括取得済みの場合はスキップ
+    if (initialLiked !== undefined) setLiked(initialLiked)
+  }, [initialLiked])
+
+  // PostGrid から boolean が渡された場合は個別 fetch スキップ
+  useEffect(() => {
     if (initialLiked !== undefined) return
     ensureAnonymousUser().then(() => {
       fetch(`/api/likes?postId=${postId}`)

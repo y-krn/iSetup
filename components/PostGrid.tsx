@@ -116,7 +116,7 @@ export function PostGrid({
             priority={i < 3}
             showEdit={showEdit}
             featured={!showEdit && i === 0 && !tag && !theme}
-            initialLiked={likedMap[post.id]}
+            initialLiked={likedMap[post.id] ?? false}
           />
         ))}
       </div>
