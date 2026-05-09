@@ -5,6 +5,13 @@ import { AlertTriangle, Folder, Mail, ScanLine } from 'lucide-react'
 import { BackButton } from '@/components/BackButton'
 import { getAuthenticatedUser } from '@/lib/auth-server'
 
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
 export default async function UploadPage() {
   const user = await getAuthenticatedUser()
   return (

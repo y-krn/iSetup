@@ -3,6 +3,13 @@ import { Mail, ShieldCheck } from 'lucide-react'
 import { BackButton } from '@/components/BackButton'
 import { LoginForm } from '@/components/LoginForm'
 
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
 type Props = {
   searchParams: Promise<{
     error?: string

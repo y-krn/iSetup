@@ -6,6 +6,12 @@ import { getAuthenticatedUser } from '@/lib/auth-server'
 import { PostGrid } from '@/components/PostGrid'
 
 export const revalidate = 0
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 type Props = {
   searchParams: Promise<{ tab?: string }>

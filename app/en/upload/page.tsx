@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/en/upload',
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 export default async function EnglishUploadPage() {
@@ -87,4 +91,3 @@ export default async function EnglishUploadPage() {
     </div>
   )
 }
-

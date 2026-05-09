@@ -7,6 +7,13 @@ import { EditTagsForm } from '@/components/EditTagsForm'
 
 type Props = { params: Promise<{ id: string }> }
 
+export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
+
 export default async function EditPostPage({ params }: Props) {
   const { id } = await params
   const user = await getAuthenticatedUser()

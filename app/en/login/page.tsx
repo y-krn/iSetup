@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/en/login',
   },
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 export default async function EnglishLoginPage({ searchParams }: Props) {
@@ -73,4 +77,3 @@ export default async function EnglishLoginPage({ searchParams }: Props) {
     </div>
   )
 }
-
