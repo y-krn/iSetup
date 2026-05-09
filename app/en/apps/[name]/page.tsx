@@ -94,51 +94,51 @@ export default async function EnglishAppPage({ params }: Props) {
   const setupCount = posts.length
   const trackId = /^\d+$/.test(decodedName) ? decodedName : undefined
   const canonicalUrl = `https://isetup.app/en/apps/${encodeURIComponent(name)}`
-  const jsonLd = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'CollectionPage',
-      name: `iPhone setups using ${appName}`,
-      description: `Real iPhone home screen and lock screen setups featuring ${appName}.`,
-      url: canonicalUrl,
-      isPartOf: {
-        '@type': 'WebSite',
-        name: 'iSetup.app',
-        url: 'https://isetup.app',
-      },
-    },
-    info && {
-      '@context': 'https://schema.org',
-      '@type': 'SoftwareApplication',
-      name: info.trackName,
-      applicationCategory: info.primaryGenreName,
-      operatingSystem: 'iOS',
-      url: info.trackViewUrl,
-      image: info.artworkUrl512 ?? info.artworkUrl100,
-      author: {
-        '@type': 'Organization',
-        name: info.artistName,
-      },
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Popular apps',
-          item: 'https://isetup.app/en/apps',
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'CollectionPage',
+        name: `iPhone setups using ${appName}`,
+        description: `Real iPhone home screen and lock screen setups featuring ${appName}.`,
+        url: canonicalUrl,
+        isPartOf: {
+          '@type': 'WebSite',
+          name: 'iSetup.app',
+          url: 'https://isetup.app',
         },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: appName,
-          item: canonicalUrl,
+      },
+      info && {
+        '@type': 'SoftwareApplication',
+        name: info.trackName,
+        applicationCategory: info.primaryGenreName,
+        operatingSystem: 'iOS',
+        url: info.trackViewUrl,
+        image: info.artworkUrl512 ?? info.artworkUrl100,
+        author: {
+          '@type': 'Organization',
+          name: info.artistName,
         },
-      ],
-    },
-  ].filter(Boolean)
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Popular apps',
+            item: 'https://isetup.app/en/apps',
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: appName,
+            item: canonicalUrl,
+          },
+        ],
+      },
+    ].filter(Boolean),
+  }
 
   return (
     <div className="space-y-6">
