@@ -27,6 +27,14 @@ export async function ensureAnonymousUser(): Promise<string | null> {
 }
 
 /**
+ * サインアウト時にキャッシュをクリア。
+ * 同一タブで別ユーザーが使い始めても旧IDを引かないようにする。
+ */
+export function clearAuthCache() {
+  cached = null
+}
+
+/**
  * 現在のuser.id取得 (clientのみ)。未認証なら null。
  */
 export async function getCurrentUserId(): Promise<string | null> {
