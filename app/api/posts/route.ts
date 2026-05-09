@@ -16,9 +16,21 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const cursor = searchParams.get('cursor')
   const tag = searchParams.get('tag')
+  const trackId = searchParams.get('trackId')
   const theme = searchParams.get('theme')
   const type = searchParams.get('type')
   const limit = 20
+
+  if (trackId) {
+    const { data, error } = await admin.rpc('posts_by_track_id', { track_id: trackId })
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    const posts = (data ?? [])
+      .filter((post: { created_at: string }) => !cursor || post.created_at < cursor)
+      .slice(0, limit)
+
+    return NextResponse.json(posts)
+  }
 
   let query = admin
     .from('posts')

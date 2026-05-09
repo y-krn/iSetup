@@ -17,6 +17,7 @@ type Post = {
 type Props = {
   initialPosts: Post[]
   tag?: string
+  trackId?: string
   theme?: string
   type?: string
   showEdit?: boolean
@@ -31,6 +32,7 @@ type Props = {
 export function PostGrid({
   initialPosts,
   tag,
+  trackId,
   theme,
   type,
   showEdit,
@@ -66,7 +68,8 @@ export function PostGrid({
     if (loading || !hasMore || !cursor) return
     setLoading(true)
     const params = new URLSearchParams({ cursor })
-    if (tag) params.set('tag', tag)
+    if (trackId) params.set('trackId', trackId)
+    else if (tag) params.set('tag', tag)
     if (theme) params.set('theme', theme)
     if (type) params.set('type', type)
     const res = await fetch(`/api/posts?${params}`)
@@ -76,7 +79,7 @@ export function PostGrid({
     setHasMore(data.length === 20)
     setLoading(false)
     fetchLiked(data.map(p => p.id))
-  }, [loading, hasMore, cursor, tag, theme, type, fetchLiked])
+  }, [loading, hasMore, cursor, tag, trackId, theme, type, fetchLiked])
 
   useEffect(() => {
     fetchLiked(initialPosts.map(p => p.id))
@@ -93,16 +96,17 @@ export function PostGrid({
   }, [loadMore])
 
   if (posts.length === 0) {
+    const isFiltered = !!(tag || trackId || theme)
     return (
       <div className="gallery-shelf rounded-[2.25rem] px-6 py-16 text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-[1.5rem] bg-accent/10 text-accent">
-          {tag || theme ? <SearchX size={28} /> : <ImagePlus size={28} />}
+          {isFiltered ? <SearchX size={28} /> : <ImagePlus size={28} />}
         </div>
         <h2 className="mt-5 text-xl font-black">
-          {tag || theme ? filteredEmptyTitle : emptyTitle}
+          {isFiltered ? filteredEmptyTitle : emptyTitle}
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-          {tag || theme ? filteredEmptyDescription : emptyDescription}
+          {isFiltered ? filteredEmptyDescription : emptyDescription}
         </p>
       </div>
     )
@@ -117,7 +121,7 @@ export function PostGrid({
             post={post}
             priority={i < 3}
             showEdit={showEdit}
-            featured={!showEdit && i === 0 && !tag && !theme}
+            featured={!showEdit && i === 0 && !tag && !trackId && !theme}
             initialLiked={likedMap[post.id] ?? false}
             locale={locale}
           />

@@ -1,62 +1,82 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { ExternalLink, Images, LayoutGrid, Star } from 'lucide-react'
+import { ExternalLink, Images, LayoutGrid, Search, ShieldCheck, Sparkles, Star } from 'lucide-react'
 import { BackButton } from '@/components/BackButton'
 import { PostGrid } from '@/components/PostGrid'
+import { lookupFullApp } from '@/lib/app-store'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 type Props = { params: Promise<{ name: string }> }
 
-type ITunesItem = {
-  trackName: string
-  artistName: string
-  trackViewUrl: string
-  artworkUrl512?: string
-  artworkUrl100: string
-  description?: string
-  averageUserRating?: number
-  userRatingCount?: number
-  genres?: string[]
-  formattedPrice?: string
-  screenshotUrls?: string[]
-  primaryGenreName?: string
+type PostRow = {
+  id: string
+  image_url: string
+  like_count: number
+  extracted_tags: Record<string, unknown>
+  created_at: string
+  anon_user_id: string | null
 }
 
-async function fetchFullInfo(slug: string, country = 'us'): Promise<ITunesItem | null> {
+async function lookupEnglishApp(slug: string) {
+  return (await lookupFullApp(slug, 'us')) ?? (await lookupFullApp(slug, 'jp'))
+}
+
+async function getPostsForApp(slug: string, limit = 20): Promise<PostRow[]> {
+  const supabase = createAdminClient()
+
   if (/^\d+$/.test(slug)) {
-    const params = new URLSearchParams({ id: slug, country, entity: 'software' })
-    const res = await fetch(`https://itunes.apple.com/lookup?${params}`, { next: { revalidate: 86400 } })
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.results?.[0] ?? null
+    const { data } = await supabase.rpc('posts_by_track_id', { track_id: slug })
+    return ((data as PostRow[]) ?? []).slice(0, limit)
   }
 
-  const params = new URLSearchParams({ term: slug, country, entity: 'software', limit: '1' })
-  const res = await fetch(`https://itunes.apple.com/search?${params}`, { next: { revalidate: 86400 } })
-  if (!res.ok) return null
-  const data = await res.json()
-  return data.results?.[0] ?? null
+  const { data } = await supabase
+    .from('posts')
+    .select('*')
+    .or(`extracted_tags->apps.cs.${JSON.stringify([slug])},extracted_tags->dock_apps.cs.${JSON.stringify([slug])}`)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  return data ?? []
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name } = await params
   const decodedName = decodeURIComponent(name)
-  const info = await fetchFullInfo(decodedName)
+  const [info, posts] = await Promise.all([
+    lookupEnglishApp(decodedName),
+    getPostsForApp(decodedName, 1),
+  ])
   const appName = info?.trackName ?? decodedName
+  const canonical = `/en/apps/${encodeURIComponent(name)}`
+  const hasDiscoveryContent = !!info || posts.length > 0
 
   return {
-    title: `iPhone setups using ${appName} — iSetup`,
-    description: `Browse real iPhone home screen and lock screen setups that use ${appName}.`,
+    title: `iPhone setups using ${appName} | iSetup`,
+    description: `Browse real iPhone home screen and lock screen setups featuring ${appName}, with apps, widgets, colors, and themes automatically detected.`,
+    robots: hasDiscoveryContent ? undefined : { index: false, follow: true },
     alternates: {
-      canonical: `/en/apps/${encodeURIComponent(name)}`,
+      canonical,
+      languages: {
+        'ja-JP': `/apps/${encodeURIComponent(name)}`,
+        en: canonical,
+      },
     },
     openGraph: {
-      title: `iPhone setups using ${appName} — iSetup`,
-      description: `Browse real iPhone setups that use ${appName}.`,
-      url: `/en/apps/${encodeURIComponent(name)}`,
+      title: `iPhone setups using ${appName} | iSetup`,
+      description: `Browse real iPhone setups featuring ${appName}, with apps, widgets, colors, and themes automatically detected.`,
+      url: canonical,
       siteName: 'iSetup.app',
       locale: 'en_US',
       type: 'website',
+      images: info?.artworkUrl512 || info?.artworkUrl100
+        ? [{ url: info.artworkUrl512 ?? info.artworkUrl100, alt: `${appName} app icon` }]
+        : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `iPhone setups using ${appName} | iSetup`,
+      description: `Browse real iPhone setups featuring ${appName}.`,
+      images: info?.artworkUrl512 || info?.artworkUrl100 ? [info.artworkUrl512 ?? info.artworkUrl100] : undefined,
     },
   }
 }
@@ -65,38 +85,68 @@ export default async function EnglishAppPage({ params }: Props) {
   const { name } = await params
   const decodedName = decodeURIComponent(name)
 
-  const [info, supabase] = await Promise.all([
-    fetchFullInfo(decodedName),
-    Promise.resolve(createAdminClient()),
+  const [info, posts] = await Promise.all([
+    lookupEnglishApp(decodedName),
+    getPostsForApp(decodedName),
   ])
 
-  type PostRow = {
-    id: string
-    image_url: string
-    like_count: number
-    extracted_tags: Record<string, unknown>
-    created_at: string
-    anon_user_id: string | null
-  }
-
-  let posts: PostRow[] | null = null
-  if (/^\d+$/.test(decodedName)) {
-    const { data } = await supabase.rpc('posts_by_track_id', { track_id: decodedName })
-    posts = (data as PostRow[]) ?? null
-  } else {
-    const { data } = await supabase
-      .from('posts')
-      .select('*')
-      .or(`extracted_tags->apps.cs.${JSON.stringify([decodedName])},extracted_tags->dock_apps.cs.${JSON.stringify([decodedName])}`)
-      .order('created_at', { ascending: false })
-      .limit(20)
-    posts = data
-  }
-
   const appName = info?.trackName ?? decodedName
+  const setupCount = posts.length
+  const trackId = /^\d+$/.test(decodedName) ? decodedName : undefined
+  const canonicalUrl = `https://isetup.app/en/apps/${encodeURIComponent(name)}`
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: `iPhone setups using ${appName}`,
+      description: `Real iPhone home screen and lock screen setups featuring ${appName}.`,
+      url: canonicalUrl,
+      isPartOf: {
+        '@type': 'WebSite',
+        name: 'iSetup.app',
+        url: 'https://isetup.app',
+      },
+    },
+    info && {
+      '@context': 'https://schema.org',
+      '@type': 'SoftwareApplication',
+      name: info.trackName,
+      applicationCategory: info.primaryGenreName,
+      operatingSystem: 'iOS',
+      url: info.trackViewUrl,
+      image: info.artworkUrl512 ?? info.artworkUrl100,
+      author: {
+        '@type': 'Organization',
+        name: info.artistName,
+      },
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Popular apps',
+          item: 'https://isetup.app/en/apps',
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: appName,
+          item: canonicalUrl,
+        },
+      ],
+    },
+  ].filter(Boolean)
 
   return (
     <div className="space-y-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <BackButton fallback="/en/apps" variant="text" label="Back" />
 
       {info ? (
@@ -118,10 +168,10 @@ export default async function EnglishAppPage({ params }: Props) {
               <div className="space-y-2">
                 <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
                   <LayoutGrid size={13} />
-                  App Profile
+                  Setup Discovery
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-black leading-tight">{info.trackName}</h1>
+                  <h1 className="text-3xl sm:text-4xl font-black leading-tight">iPhone setups using {info.trackName}</h1>
                   <p className="mt-1 truncate text-sm font-semibold text-muted">{info.artistName}</p>
                 </div>
               </div>
@@ -140,7 +190,16 @@ export default async function EnglishAppPage({ params }: Props) {
                 {info.formattedPrice && (
                   <span className="gallery-caption rounded-full px-3 py-1 text-xs font-semibold">{info.formattedPrice}</span>
                 )}
+                <span className="gallery-caption inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold">
+                  <Sparkles size={12} />
+                  {setupCount.toLocaleString('en-US')} {setupCount === 1 ? 'setup' : 'setups'}
+                </span>
               </div>
+
+              <p className="max-w-2xl text-sm leading-relaxed text-muted">
+                See real iPhone home screens and lock screens where {info.trackName} appears,
+                with apps, widgets, colors, and themes detected from shared setups.
+              </p>
 
               {info.description && (
                 <p className="max-w-2xl whitespace-pre-line text-sm leading-relaxed text-muted line-clamp-5">
@@ -172,8 +231,8 @@ export default async function EnglishAppPage({ params }: Props) {
                     key={url}
                     src={url}
                     alt={`App Store screenshot ${i + 1}`}
-                    width={150}
-                    height={325}
+                    width={180}
+                    height={320}
                     className="flex-shrink-0 rounded-[1.35rem] shadow-lg ring-1 ring-black/5"
                     unoptimized
                   />
@@ -183,20 +242,56 @@ export default async function EnglishAppPage({ params }: Props) {
           )}
         </section>
       ) : (
-        <div className="gallery-caption rounded-[2rem] p-8 text-center">
-          <h1 className="text-lg font-black">{decodedName}</h1>
-          <p className="mt-2 text-sm text-muted">Could not find this app in the App Store.</p>
+        <div className="gallery-caption rounded-[2rem] p-8">
+          <div className="mx-auto max-w-xl text-center">
+            <h1 className="text-2xl font-black">iPhone setups using {decodedName}</h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              We could not find this app in the US App Store, but you can still browse setup posts that mention it.
+            </p>
+          </div>
         </div>
       )}
 
+      <section className="grid gap-3 md:grid-cols-3">
+        <div className="gallery-caption rounded-3xl p-4">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
+            <LayoutGrid size={13} />
+            Matching setups
+          </div>
+          <div className="mt-1 text-2xl font-black">{setupCount.toLocaleString('en-US')}</div>
+        </div>
+        <div className="gallery-caption rounded-3xl p-4">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
+            <Search size={13} />
+            What to inspect
+          </div>
+          <p className="mt-2 text-xs font-semibold leading-relaxed text-muted">
+            Dock placement, widgets, color palette, and related apps.
+          </p>
+        </div>
+        <div className="gallery-caption rounded-3xl p-4">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-muted">
+            <ShieldCheck size={13} />
+            Independent
+          </div>
+          <p className="mt-2 text-xs font-semibold leading-relaxed text-muted">
+            App names and icons belong to their respective owners.
+          </p>
+        </div>
+      </section>
+
       <div className="space-y-4">
-        <h2 className="flex items-center gap-2 text-xs font-bold text-muted uppercase tracking-[0.16em]">
-          <LayoutGrid size={14} />
-          iPhone setups using {appName}
-        </h2>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-muted">Setup gallery</p>
+          <h2 className="mt-1 flex items-center gap-2 text-xl font-black">
+            <LayoutGrid size={18} />
+            iPhone setups using {appName}
+          </h2>
+        </div>
         <PostGrid
-          initialPosts={posts ?? []}
+          initialPosts={posts}
           tag={decodedName}
+          trackId={trackId}
           emptyTitle="No setups yet"
           emptyDescription={`No shared setups using ${appName} yet.`}
           filteredEmptyTitle="No matching setups"
@@ -208,4 +303,3 @@ export default async function EnglishAppPage({ params }: Props) {
     </div>
   )
 }
-

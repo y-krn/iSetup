@@ -7,7 +7,23 @@ export type AppStoreInfo = {
   trackName: string
 }
 
+export type FullAppStoreInfo = {
+  trackName: string
+  artistName: string
+  trackViewUrl: string
+  artworkUrl512?: string
+  artworkUrl100: string
+  description?: string
+  averageUserRating?: number
+  userRatingCount?: number
+  genres?: string[]
+  formattedPrice?: string
+  screenshotUrls?: string[]
+  primaryGenreName?: string
+}
+
 const ENDPOINT = 'https://itunes.apple.com/search'
+const LOOKUP_ENDPOINT = 'https://itunes.apple.com/lookup'
 
 type ITunesItem = {
   trackName: string
@@ -50,6 +66,36 @@ export async function lookupApp(name: string, country = 'jp'): Promise<AppStoreI
   }
 }
 
+export async function lookupAppByTrackId(trackId: string, country = 'jp'): Promise<FullAppStoreInfo | null> {
+  try {
+    const params = new URLSearchParams({ id: trackId, country, entity: 'software' })
+    const res = await fetch(`${LOOKUP_ENDPOINT}?${params}`, { next: { revalidate: 86400 } })
+    if (!res.ok) return null
+
+    const data = await res.json()
+    return data.results?.[0] ?? null
+  } catch {
+    return null
+  }
+}
+
+export async function lookupFullApp(slug: string, country = 'jp'): Promise<FullAppStoreInfo | null> {
+  if (/^\d+$/.test(slug)) {
+    return lookupAppByTrackId(slug, country)
+  }
+
+  try {
+    const params = new URLSearchParams({ term: slug, country, entity: 'software', limit: '1' })
+    const res = await fetch(`${ENDPOINT}?${params}`, { next: { revalidate: 86400 } })
+    if (!res.ok) return null
+
+    const data = await res.json()
+    return data.results?.[0] ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function lookupApps(names: string[]): Promise<Record<string, AppStoreInfo>> {
   const results = await Promise.all(names.map(async n => [n, await lookupApp(n)] as const))
   return Object.fromEntries(results.filter(([, v]) => v !== null)) as Record<string, AppStoreInfo>
@@ -60,4 +106,3 @@ export function extractTrackId(url: string): string | null {
   const m = url.match(/\/id(\d+)/)
   return m?.[1] ?? null
 }
-
