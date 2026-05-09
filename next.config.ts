@@ -1,13 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['192.168.1.28'],
+  allowedDevOrigins: ['127.0.0.1', '192.168.1.28'],
   experimental: {
     staleTimes: {
       dynamic: 0,
     },
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -16,7 +17,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'http',
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         pathname: '/storage/v1/object/public/**',
       },
       {
