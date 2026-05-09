@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { ImagePlus, SearchX } from 'lucide-react'
+import { ensureAnonymousUser } from '@/lib/auth'
 import { PostCard } from './PostCard'
 
 type Post = {
@@ -13,17 +14,51 @@ type Post = {
   anon_user_id: string | null
 }
 
-type Props = { initialPosts: Post[]; tag?: string; theme?: string; type?: string; showEdit?: boolean }
+type Props = {
+  initialPosts: Post[]
+  tag?: string
+  theme?: string
+  type?: string
+  showEdit?: boolean
+  emptyTitle?: string
+  emptyDescription?: string
+  filteredEmptyTitle?: string
+  filteredEmptyDescription?: string
+  loadingLabel?: string
+}
 
-export function PostGrid({ initialPosts, tag, theme, type, showEdit }: Props) {
+export function PostGrid({
+  initialPosts,
+  tag,
+  theme,
+  type,
+  showEdit,
+  emptyTitle = 'まだ投稿がありません',
+  emptyDescription = '最初のiPhone画面が投稿されると、ここにギャラリーとして並びます。',
+  filteredEmptyTitle = '条件に合う投稿がありません',
+  filteredEmptyDescription = '別のアプリ、ウィジェット、テーマで探してみてください。',
+  loadingLabel = '読み込み中...',
+}: Props) {
   const [posts, setPosts] = useState<Post[]>(initialPosts)
   const [cursor, setCursor] = useState<string | null>(
     initialPosts.at(-1)?.created_at ?? null
   )
   const [hasMore, setHasMore] = useState(initialPosts.length === 20)
   const [loading, setLoading] = useState(false)
+  const [likedMap, setLikedMap] = useState<Record<string, boolean>>({})
   const observerRef = useRef<IntersectionObserver | null>(null)
   const sentinelRef = useRef<HTMLDivElement>(null)
+
+  const fetchLiked = useCallback(async (ids: string[]) => {
+    if (!ids.length) return
+    await ensureAnonymousUser()
+    const params = new URLSearchParams()
+    ids.forEach(id => params.append('id', id))
+    const res = await fetch(`/api/likes/bulk?${params}`)
+    if (!res.ok) return
+    const data: Record<string, boolean> = await res.json()
+    setLikedMap(prev => ({ ...prev, ...data }))
+  }, [])
 
   const loadMore = useCallback(async () => {
     if (loading || !hasMore || !cursor) return
@@ -38,7 +73,13 @@ export function PostGrid({ initialPosts, tag, theme, type, showEdit }: Props) {
     setCursor(data.at(-1)?.created_at ?? null)
     setHasMore(data.length === 20)
     setLoading(false)
-  }, [loading, hasMore, cursor, tag, theme, type])
+    fetchLiked(data.map(p => p.id))
+  }, [loading, hasMore, cursor, tag, theme, type, fetchLiked])
+
+  useEffect(() => {
+    fetchLiked(initialPosts.map(p => p.id))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -56,12 +97,10 @@ export function PostGrid({ initialPosts, tag, theme, type, showEdit }: Props) {
           {tag || theme ? <SearchX size={28} /> : <ImagePlus size={28} />}
         </div>
         <h2 className="mt-5 text-xl font-black">
-          {tag || theme ? '条件に合う投稿がありません' : 'まだ投稿がありません'}
+          {tag || theme ? filteredEmptyTitle : emptyTitle}
         </h2>
         <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted">
-          {tag || theme
-            ? '別のアプリ、ウィジェット、テーマで探してみてください。'
-            : '最初のiPhone画面が投稿されると、ここにギャラリーとして並びます。'}
+          {tag || theme ? filteredEmptyDescription : emptyDescription}
         </p>
       </div>
     )
@@ -77,12 +116,13 @@ export function PostGrid({ initialPosts, tag, theme, type, showEdit }: Props) {
             priority={i < 3}
             showEdit={showEdit}
             featured={!showEdit && i === 0 && !tag && !theme}
+            initialLiked={likedMap[post.id]}
           />
         ))}
       </div>
       <div ref={sentinelRef} className="h-4" />
       {loading && (
-        <div className="text-center py-4 text-gray-400 text-sm">読み込み中...</div>
+        <div className="text-center py-4 text-gray-400 text-sm">{loadingLabel}</div>
       )}
     </>
   )

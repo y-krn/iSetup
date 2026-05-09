@@ -4,23 +4,25 @@ import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
 import { ensureAnonymousUser } from '@/lib/auth'
 
-type Props = { postId: string; initialCount: number }
+type Props = { postId: string; initialCount: number; initialLiked?: boolean }
 
-export function LikeButton({ postId, initialCount }: Props) {
-  const [liked, setLiked] = useState(false)
+export function LikeButton({ postId, initialCount, initialLiked }: Props) {
+  const [liked, setLiked] = useState(initialLiked ?? false)
   const [count, setCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
   const [animate, setAnimate] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // PostGrid から一括取得済みの場合はスキップ
+    if (initialLiked !== undefined) return
     ensureAnonymousUser().then(() => {
       fetch(`/api/likes?postId=${postId}`)
         .then(r => r.json())
         .then(d => setLiked(d.liked))
         .catch(() => {})
     })
-  }, [postId])
+  }, [postId, initialLiked])
 
   async function toggle() {
     if (loading) return
