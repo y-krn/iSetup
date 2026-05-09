@@ -16,9 +16,9 @@ type Post = {
   anon_user_id: string | null
 }
 
-type Props = { post: Post; priority?: boolean; showEdit?: boolean; featured?: boolean }
+type Props = { post: Post; priority?: boolean; showEdit?: boolean; featured?: boolean; initialLiked?: boolean }
 
-export function PostCard({ post, priority, showEdit, featured }: Props) {
+export function PostCard({ post, priority, showEdit, featured, initialLiked }: Props) {
   const tags = post.extracted_tags ?? {}
   const theme = tags.theme
   const screenType: ScreenType = (tags as { screen_type?: string; is_lock_screen?: boolean }).screen_type === 'lock' || (tags as { is_lock_screen?: boolean }).is_lock_screen ? 'lock' : 'home'
@@ -64,7 +64,7 @@ export function PostCard({ post, priority, showEdit, featured }: Props) {
 
       <div className="px-1.5 pt-3 flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <LikeButton postId={post.id} initialCount={post.like_count} />
+          <LikeButton postId={post.id} initialCount={post.like_count} initialLiked={initialLiked} />
           <span className="text-[11px] font-medium text-muted">{date}</span>
         </div>
         {showEdit && (

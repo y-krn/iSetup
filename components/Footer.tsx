@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, ShieldCheck } from 'lucide-react'
+import { FileText, Languages, ShieldCheck } from 'lucide-react'
 
 export function Footer() {
   return (
@@ -12,6 +12,13 @@ export function Footer() {
         <Link href="/privacy" prefetch={false} className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 hover:text-accent transition-colors">
           <ShieldCheck size={13} />
           プライバシーポリシー
+        </Link>
+        <Link href="/en" prefetch={false} className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 hover:text-accent transition-colors">
+          <Languages size={13} />
+          English
+        </Link>
+        <Link href="/" prefetch={false} className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 hover:text-accent transition-colors">
+          日本語
         </Link>
         <span className="px-2 py-1">© iSetup.app</span>
       </div>
