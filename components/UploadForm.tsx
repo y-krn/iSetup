@@ -71,6 +71,33 @@ const copy = {
   fallbackPath: string
 }>
 
+const enApiErrorMap: Record<string, string> = {
+  unauthorized: 'Login is required.',
+  'login required': 'Email login is required to post.',
+  'invalid path': 'The upload information is invalid.',
+  'signed url生成失敗': 'Could not prepare the upload.',
+  'アップロードURL取得失敗': 'Could not prepare the upload.',
+  'アップロード済みファイルが見つかりません': 'Could not find the uploaded file. Please try again.',
+  'カメラで撮影した写真は投稿できません。スクリーンショットを使用してください。': 'Photos taken with a camera cannot be posted. Please upload an iPhone screenshot.',
+  'iOSホーム画面の縦長スクリーンショットを使用してください。': 'Please upload a vertical iPhone home screen or lock screen screenshot.',
+  'AI解析に失敗しました。再試行してください。': 'Could not analyze the screenshot. Please try again.',
+  'iOSホーム画面またはロック画面のスクリーンショットのみ投稿可能です。': 'Only iPhone home screen or lock screen screenshots can be posted.',
+  'アップロードに失敗しました': 'Upload failed. Please try again.',
+}
+
+function formatApiError(error: unknown, fallback: string, locale: Locale) {
+  if (typeof error !== 'string' || !error.trim()) return fallback
+  if (locale === 'ja') return error
+
+  const mapped = enApiErrorMap[error]
+  if (mapped) return mapped
+
+  // Avoid leaking untranslated Japanese API messages into the English upload flow.
+  if (/[\u3040-\u30ff\u3400-\u9fff]/.test(error)) return fallback
+
+  return error
+}
+
 export function UploadForm({ locale = 'ja' }: { locale?: Locale } = {}) {
   const t = copy[locale]
   const [preview, setPreview] = useState<string | null>(null)
@@ -106,10 +133,11 @@ export function UploadForm({ locale = 'ja' }: { locale?: Locale } = {}) {
     try {
       // 1. signed upload URL 取得
       setActiveStep('prepare')
-      const urlRes = await fetch('/api/posts/upload-url', { method: 'POST' })
+      const localeParam = locale === 'en' ? '?locale=en' : ''
+      const urlRes = await fetch(`/api/posts/upload-url${localeParam}`, { method: 'POST' })
       if (!urlRes.ok) {
         const d = await urlRes.json().catch(() => ({}))
-        setError(d.error ?? t.uploadUrlError)
+        setError(formatApiError(d.error, t.uploadUrlError, locale))
         setUploading(false)
         setActiveStep(null)
         return
@@ -131,14 +159,14 @@ export function UploadForm({ locale = 'ja' }: { locale?: Locale } = {}) {
 
       // 3. サーバ側でAI解析 + 圧縮
       setActiveStep('analyze')
-      const res = await fetch('/api/posts', {
+      const res = await fetch(`/api/posts${localeParam}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path }),
       })
       if (!res.ok) {
         const d = await res.json().catch(() => ({}))
-        setError(d.error ?? t.postError(res.status))
+        setError(formatApiError(d.error, t.postError(res.status), locale))
         setUploading(false)
         setActiveStep(null)
         return

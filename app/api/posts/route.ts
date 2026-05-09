@@ -8,8 +8,17 @@ import { analyzeScreenshotFromBase64, type ExtractedTags } from '@/lib/gemini'
 import { lookupApps } from '@/lib/app-store'
 
 const BUCKET = 'screenshots'
+type Locale = 'ja' | 'en'
 
 export const maxDuration = 60
+
+function getLocale(req: NextRequest): Locale {
+  return new URL(req.url).searchParams.get('locale') === 'en' ? 'en' : 'ja'
+}
+
+function message(locale: Locale, ja: string, en: string) {
+  return locale === 'en' ? en : ja
+}
 
 export async function GET(req: NextRequest) {
   const admin = createAdminClient()
@@ -52,17 +61,19 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const locale = getLocale(req)
+
   try {
     // session認証 (匿名は拒否)
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-    if (user.is_anonymous) return NextResponse.json({ error: 'login required' }, { status: 403 })
+    if (!user) return NextResponse.json({ error: message(locale, '認証が必要です', 'Login is required.') }, { status: 401 })
+    if (user.is_anonymous) return NextResponse.json({ error: message(locale, '投稿にはメール認証が必要です', 'Email login is required to post.') }, { status: 403 })
 
     const body = await req.json().catch(() => null) as { path?: string } | null
     const tempPath = body?.path
     if (!tempPath || !tempPath.startsWith('temp/')) {
-      return NextResponse.json({ error: 'invalid path' }, { status: 400 })
+      return NextResponse.json({ error: message(locale, 'アップロード情報が不正です', 'The upload information is invalid.') }, { status: 400 })
     }
 
     const admin = createAdminClient()
@@ -71,7 +82,7 @@ export async function POST(req: NextRequest) {
     const { data: blob, error: dlError } = await admin.storage.from(BUCKET).download(tempPath)
     if (dlError || !blob) {
       console.error('download failed:', dlError)
-      return NextResponse.json({ error: 'アップロード済みファイルが見つかりません' }, { status: 400 })
+      return NextResponse.json({ error: message(locale, 'アップロード済みファイルが見つかりません', 'Could not find the uploaded file. Please try again.') }, { status: 400 })
     }
     const originalBuffer = Buffer.from(await blob.arrayBuffer())
     const originalMime = blob.type || 'image/png'
@@ -94,13 +105,13 @@ export async function POST(req: NextRequest) {
 
     if (hasCamera) {
       return NextResponse.json(
-        { error: 'カメラで撮影した写真は投稿できません。スクリーンショットを使用してください。' },
+        { error: message(locale, 'カメラで撮影した写真は投稿できません。スクリーンショットを使用してください。', 'Photos taken with a camera cannot be posted. Please upload an iPhone screenshot.') },
         { status: 400 }
       )
     }
     if (aspect >= 0.7) {
       return NextResponse.json(
-        { error: 'iOSホーム画面の縦長スクリーンショットを使用してください。' },
+        { error: message(locale, 'iOSホーム画面の縦長スクリーンショットを使用してください。', 'Please upload a vertical iPhone home screen or lock screen screenshot.') },
         { status: 400 }
       )
     }
@@ -124,7 +135,7 @@ export async function POST(req: NextRequest) {
       )
     } catch (e) {
       console.error('AI analysis failed:', e)
-      return NextResponse.json({ error: 'AI解析に失敗しました。再試行してください。' }, { status: 500 })
+      return NextResponse.json({ error: message(locale, 'AI解析に失敗しました。再試行してください。', 'Could not analyze the screenshot. Please try again.') }, { status: 500 })
     }
 
     const isHomeScreen = extractedTags.is_home_screen || extractedTags.screen_type === 'home'
@@ -134,7 +145,7 @@ export async function POST(req: NextRequest) {
     // ホーム画面・ロック画面以外 → 拒否
     if (!isAllowedScreen) {
       return NextResponse.json(
-        { error: 'iOSホーム画面またはロック画面のスクリーンショットのみ投稿可能です。' },
+        { error: message(locale, 'iOSホーム画面またはロック画面のスクリーンショットのみ投稿可能です。', 'Only iPhone home screen or lock screen screenshots can be posted.') },
         { status: 400 }
       )
     }
@@ -194,6 +205,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(data, { status: 201 })
   } catch (e) {
     console.error('post error:', e)
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ error: message(locale, 'アップロードに失敗しました', 'Upload failed. Please try again.') }, { status: 500 })
   }
 }
