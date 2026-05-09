@@ -71,7 +71,7 @@ export default async function EnglishHomePage() {
 
         <div className="flex flex-wrap gap-2">
           <Link
-            href="/upload"
+            href="/en/upload"
             prefetch={false}
             className="inline-flex h-11 items-center gap-2 rounded-full bg-accent px-4 text-sm font-bold text-white shadow-lg shadow-emerald-950/10 transition-all hover:bg-accent-strong hover:scale-[1.01] active:scale-95"
           >
@@ -102,7 +102,10 @@ export default async function EnglishHomePage() {
           initialPosts={posts}
           emptyTitle="No setups yet"
           emptyDescription="Once the first iPhone setup is shared, it will appear here."
+          filteredEmptyTitle="No matching setups"
+          filteredEmptyDescription="Try another app, widget, or theme."
           loadingLabel="Loading..."
+          locale="en"
         />
       </section>
     </div>

@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react'
 import { Heart } from 'lucide-react'
 import { ensureAnonymousUser } from '@/lib/auth'
 
-type Props = { postId: string; initialCount: number; initialLiked?: boolean }
+type Props = { postId: string; initialCount: number; initialLiked?: boolean; locale?: 'ja' | 'en' }
 
-export function LikeButton({ postId, initialCount, initialLiked }: Props) {
+export function LikeButton({ postId, initialCount, initialLiked, locale = 'ja' }: Props) {
   const [liked, setLiked] = useState(initialLiked ?? false)
   const [count, setCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
@@ -34,7 +34,7 @@ export function LikeButton({ postId, initialCount, initialLiked }: Props) {
     setError(null)
     const userId = await ensureAnonymousUser()
     if (!userId) {
-      setError('失敗')
+      setError(locale === 'en' ? 'Failed' : '失敗')
       return
     }
 
@@ -59,7 +59,7 @@ export function LikeButton({ postId, initialCount, initialLiked }: Props) {
     } catch {
       setLiked(previousLiked)
       setCount(previousCount)
-      setError('失敗')
+      setError(locale === 'en' ? 'Failed' : '失敗')
     } finally {
       setLoading(false)
     }
@@ -71,7 +71,7 @@ export function LikeButton({ postId, initialCount, initialLiked }: Props) {
         onClick={toggle}
         disabled={loading}
         className="flex items-center gap-1.5 text-sm transition-colors active:scale-90 disabled:opacity-60"
-        aria-label="like"
+        aria-label={locale === 'en' ? 'Like post' : 'いいね'}
       >
         <Heart
           size={18}

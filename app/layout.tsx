@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
-import Link from 'next/link'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthHeader } from '@/components/AuthHeader'
+import { HtmlLangSync } from '@/components/HtmlLangSync'
+import { SiteLogo } from '@/components/SiteLogo'
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { Footer } from '@/components/Footer'
 import './globals.css'
@@ -42,12 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <header className="sticky top-0 z-40 glass-soft">
             <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-              <Link
-                href="/"
-                className="font-black text-lg text-foreground"
-              >
-                iSetup.app
-              </Link>
+              <SiteLogo />
               <AuthHeader />
             </div>
           </header>
@@ -56,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </main>
           <Footer />
         </ThemeProvider>
+        <HtmlLangSync />
         <Analytics />
       </body>
     </html>

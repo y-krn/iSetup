@@ -15,41 +15,53 @@ type Props = {
   searchParams: Promise<{ posted?: string }>
 }
 
+type Locale = 'ja' | 'en'
+
 const getPost = cache(async (id: string) => {
   const supabase = createAdminClient()
   const { data: post } = await supabase.from('posts').select('*').eq('id', id).single()
   return post
 })
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params
+export async function generatePostMetadata(id: string, locale: Locale = 'ja'): Promise<Metadata> {
   const post = await getPost(id)
 
   if (!post) {
     return {
-      title: '投稿が見つかりません | iSetup',
+      title: locale === 'en' ? 'Post not found | iSetup' : '投稿が見つかりません | iSetup',
     }
   }
 
   const tags = post.extracted_tags ?? {}
   const isLockScreen = tags.screen_type === 'lock' || tags.is_lock_screen
-  const title = isLockScreen ? 'iPhoneロック画面のセットアップ | iSetup' : 'iPhoneホーム画面のセットアップ | iSetup'
-  const description = isLockScreen
-    ? 'iSetupで共有されたiPhoneロック画面のスクリーンショットです。'
-    : 'iSetupで共有されたiPhoneホーム画面のスクリーンショットです。'
+  const title = locale === 'en'
+    ? isLockScreen ? 'iPhone Lock Screen Setup | iSetup' : 'iPhone Home Screen Setup | iSetup'
+    : isLockScreen ? 'iPhoneロック画面のセットアップ | iSetup' : 'iPhoneホーム画面のセットアップ | iSetup'
+  const description = locale === 'en'
+    ? isLockScreen
+      ? 'A real iPhone lock screen setup shared on iSetup, with widgets, colors, and theme detected.'
+      : 'A real iPhone home screen setup shared on iSetup, with apps, widgets, colors, and theme detected.'
+    : isLockScreen
+      ? 'iSetupで共有されたiPhoneロック画面のスクリーンショットです。'
+      : 'iSetupで共有されたiPhoneホーム画面のスクリーンショットです。'
+  const canonical = locale === 'en' ? `/en/posts/${post.id}` : `/posts/${post.id}`
 
   return {
     title,
     description,
     alternates: {
-      canonical: `/posts/${post.id}`,
+      canonical,
+      languages: {
+        'ja-JP': `/posts/${post.id}`,
+        en: `/en/posts/${post.id}`,
+      },
     },
     openGraph: {
       title,
       description,
-      url: `/posts/${post.id}`,
+      url: canonical,
       siteName: 'iSetup.app',
-      locale: 'ja_JP',
+      locale: locale === 'en' ? 'en_US' : 'ja_JP',
       type: 'article',
       images: [
         {
@@ -67,12 +79,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params
+  return generatePostMetadata(id)
+}
+
 export default async function PostPage({ params, searchParams }: Props) {
   const { id } = await params
   const { posted } = await searchParams
+  return <PostDetail id={id} posted={posted} locale="ja" />
+}
+
+export async function PostDetail({ id, posted, locale = 'ja' }: { id: string; posted?: string; locale?: Locale }) {
   const post = await getPost(id)
   if (!post) notFound()
 
+  const isEnglish = locale === 'en'
   const tags = post.extracted_tags ?? {}
   const apps: string[] = tags.apps ?? []
   const widgets: string[] = tags.widgets ?? []
@@ -81,29 +103,46 @@ export default async function PostPage({ params, searchParams }: Props) {
   const theme: string = tags.theme ?? ''
   const screenType = tags.screen_type === 'lock' || tags.is_lock_screen ? 'lock' : 'home'
   const isLockScreen = screenType === 'lock'
-  const screenLabel = isLockScreen ? 'Lock screen' : 'Home setup'
+  const screenLabel = isLockScreen ? (isEnglish ? 'Lock Screen' : 'Lock screen') : (isEnglish ? 'Home Screen' : 'Home setup')
   const appLinks: Record<string, { url: string; icon: string; trackName: string }> = tags.app_links ?? {}
   const widgetLinks: Record<string, { url: string; icon: string; trackName: string }> = tags.widget_links ?? {}
-  const createdAt = new Intl.DateTimeFormat('ja-JP', {
+  const createdAt = new Intl.DateTimeFormat(isEnglish ? 'en-US' : 'ja-JP', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   }).format(new Date(post.created_at))
   const appCount = apps.length + dockApps.length
-  const shareTitle = `iSetup: ${screenLabel}`
-  const shareText = `iSetupで${isLockScreen ? 'ロック画面' : 'ホーム画面'}のセットアップを見てみる`
+  const themePrefix = theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : ''
+  const titleText = isEnglish
+    ? `${themePrefix ? `${themePrefix} ` : ''}iPhone ${isLockScreen ? 'lock screen setup' : 'home screen setup'}`
+    : `${themePrefix || 'iOS'} ${isLockScreen ? 'lock screen' : 'home setup'}`
+  const shareTitle = isEnglish
+    ? isLockScreen ? 'iPhone Lock Screen Setup | iSetup' : 'iPhone Home Screen Setup | iSetup'
+    : `iSetup: ${screenLabel}`
+  const shareText = isEnglish
+    ? isLockScreen
+      ? 'I shared my iPhone lock screen on iSetup.\n\nWidgets, colors, and theme are automatically detected.'
+      : 'I shared my iPhone setup on iSetup.\n\nApps, widgets, colors, and theme are automatically detected.'
+    : `iSetupで${isLockScreen ? 'ロック画面' : 'ホーム画面'}のセットアップを見てみる`
+  const profileLabel = isLockScreen ? 'Lock Screen Profile' : 'Setup Profile'
+  const successTitle = isEnglish ? 'Your setup is live' : '投稿が完了しました'
+  const successDescription = isEnglish
+    ? isLockScreen
+      ? 'Your widgets, colors, and theme were detected and added to this lock screen profile.'
+      : 'Your apps, widgets, colors, and theme were detected and added to this setup profile.'
+    : 'AIが読み取ったアプリやウィジェットは、このページから確認できます。'
 
   return (
     <div className="space-y-6">
-      <BackButton fallback="/" variant="text" />
+      <BackButton fallback={isEnglish ? '/en' : '/'} variant="text" label={isEnglish ? 'Back' : undefined} />
 
       {posted === '1' && (
         <div className="gallery-caption flex items-start gap-3 rounded-3xl p-4 text-accent">
           <CheckCircle2 size={20} className="mt-0.5 flex-shrink-0" />
           <div>
-            <div className="text-sm font-black">投稿が完了しました</div>
+            <div className="text-sm font-black">{successTitle}</div>
             <p className="mt-1 text-xs leading-relaxed text-muted">
-              AIが読み取ったアプリやウィジェットは、このページから確認できます。
+              {successDescription}
             </p>
           </div>
         </div>
@@ -144,19 +183,19 @@ export default async function PostPage({ params, searchParams }: Props) {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
               <Smartphone size={13} />
-              {isLockScreen ? 'Lock Screen Profile' : 'Setup Profile'}
+              {profileLabel}
             </div>
             <div className="space-y-2">
               <h1 className="text-2xl sm:text-4xl font-black leading-tight">
-                {theme === 'dark' ? 'Dark' : theme === 'light' ? 'Light' : 'iOS'} {isLockScreen ? 'lock screen' : 'home setup'}
+                {titleText}
               </h1>
               <div className="flex flex-wrap items-center gap-3 text-sm text-muted">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarDays size={14} />
                   {createdAt}
                 </span>
-                <LikeButton postId={post.id} initialCount={post.like_count} />
-                <ShareButton title={shareTitle} text={shareText} />
+                <LikeButton postId={post.id} initialCount={post.like_count} locale={locale} />
+                <ShareButton title={shareTitle} text={shareText} locale={locale} />
               </div>
             </div>
           </div>
@@ -180,7 +219,7 @@ export default async function PostPage({ params, searchParams }: Props) {
             <div className="gallery-caption rounded-3xl p-4 space-y-3">
               <h2 className="flex items-center gap-2 text-xs font-bold text-muted uppercase tracking-[0.16em]">
                 <Palette size={14} />
-                Wallpaper Palette
+                {isEnglish ? 'Wallpaper Colors' : 'Wallpaper Palette'}
               </h2>
               <div className="grid grid-cols-3 gap-2">
                 {colors.map(c => (
@@ -197,10 +236,10 @@ export default async function PostPage({ params, searchParams }: Props) {
             <div className="space-y-3">
               <h2 className="flex items-center gap-2 text-xs font-bold text-muted uppercase tracking-[0.16em]">
                 <LayoutGrid size={14} />
-                Home Screen Apps
+                {isEnglish ? 'Apps behind this setup' : 'Home Screen Apps'}
               </h2>
               <div className="flex flex-wrap gap-2">
-                {apps.map(app => <AppLink key={app} name={app} info={appLinks[app]} />)}
+                {apps.map(app => <AppLink key={app} name={app} info={appLinks[app]} locale={locale} />)}
               </div>
             </div>
           )}
@@ -213,7 +252,7 @@ export default async function PostPage({ params, searchParams }: Props) {
               </h2>
               <div className="gallery-caption rounded-3xl p-3">
                 <div className="flex flex-wrap gap-2">
-                  {dockApps.map(app => <AppLink key={app} name={app} info={appLinks[app]} />)}
+                  {dockApps.map(app => <AppLink key={app} name={app} info={appLinks[app]} locale={locale} />)}
                 </div>
               </div>
             </div>
@@ -226,7 +265,7 @@ export default async function PostPage({ params, searchParams }: Props) {
                 Widgets
               </h2>
               <div className="flex flex-wrap gap-2">
-                {widgets.map(w => <TagBadge key={w} tag={w} type="widget" label={widgetLinks[w]?.trackName} />)}
+                {widgets.map(w => <TagBadge key={w} tag={w} type="widget" label={widgetLinks[w]?.trackName} locale={locale} />)}
               </div>
             </div>
           )}

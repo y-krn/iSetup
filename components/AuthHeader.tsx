@@ -12,6 +12,8 @@ export function AuthHeader() {
   const [isAuthed, setIsAuthed] = useState(false)
   const pathname = usePathname()
   const isEnglish = pathname?.startsWith('/en')
+  const appsHref = isEnglish ? '/en/apps' : '/apps'
+  const uploadHref = isEnglish ? '/en/upload' : '/upload'
   const appsLabel = isEnglish ? 'Popular apps' : '人気のアプリ'
   const uploadLabel = isEnglish ? 'Share' : '投稿'
   const myPageLabel = isEnglish ? 'My page' : 'マイページ'
@@ -39,7 +41,7 @@ export function AuthHeader() {
   return (
     <div className="flex items-center gap-1.5">
       <Link
-        href="/apps"
+        href={appsHref}
         prefetch={false}
         className="gallery-caption flex h-9 w-9 items-center justify-center rounded-full text-muted transition-all hover:-translate-y-0.5 hover:text-accent active:scale-90"
         aria-label={appsLabel}
@@ -60,7 +62,7 @@ export function AuthHeader() {
         </Link>
       )}
       <Link
-        href="/upload"
+        href={uploadHref}
         prefetch={false}
         className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold text-white bg-accent shadow-lg shadow-emerald-950/10 hover:bg-accent-strong hover:scale-105 active:scale-95 transition-all"
       >

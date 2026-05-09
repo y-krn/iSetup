@@ -6,16 +6,73 @@ import Image from 'next/image'
 import { CheckCircle2, Cloud, ImageIcon, Loader2, ScanLine, Smartphone, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
-const steps = [
-  { id: 'prepare', label: '準備', icon: Cloud },
-  { id: 'upload', label: '転送', icon: Upload },
-  { id: 'analyze', label: '解析', icon: ScanLine },
-] as const
+const stepIcons = {
+  prepare: Cloud,
+  upload: Upload,
+  analyze: ScanLine,
+} as const
 
-type StepId = typeof steps[number]['id']
+type StepId = keyof typeof stepIcons
 type CreatedPost = { id?: string }
+type Locale = 'ja' | 'en'
 
-export function UploadForm() {
+const copy = {
+  ja: {
+    steps: [
+      { id: 'prepare', label: '準備' },
+      { id: 'upload', label: '転送' },
+      { id: 'analyze', label: '解析' },
+    ],
+    invalidFile: '画像ファイルを選択してください',
+    uploadUrlError: 'アップロードURL取得失敗',
+    uploadErrorPrefix: 'アップロード失敗',
+    postError: (status: number) => `投稿失敗 (${status})`,
+    networkError: 'ネットワークエラー。再試行してください。',
+    selectScreenshot: 'スクショを選択',
+    scannerDescription: '投稿前にiPhone画面らしさを確認し、アップロード後にAIがアプリとウィジェットを読み取ります。',
+    selectedLabel: 'Selected',
+    processingLabel: '処理中...',
+    submitLabel: '投稿する',
+    successBasePath: '/posts',
+    fallbackPath: '/',
+  },
+  en: {
+    steps: [
+      { id: 'prepare', label: 'Prepare' },
+      { id: 'upload', label: 'Upload' },
+      { id: 'analyze', label: 'Analyze' },
+    ],
+    invalidFile: 'Choose an image file.',
+    uploadUrlError: 'Could not prepare the upload.',
+    uploadErrorPrefix: 'Upload failed',
+    postError: (status: number) => `Post failed (${status})`,
+    networkError: 'Network error. Please try again.',
+    selectScreenshot: 'Choose screenshot',
+    scannerDescription: 'We check that the image looks like an iPhone screen, then detect apps and widgets after upload.',
+    selectedLabel: 'Selected',
+    processingLabel: 'Processing...',
+    submitLabel: 'Share setup',
+    successBasePath: '/en/posts',
+    fallbackPath: '/en',
+  },
+} satisfies Record<Locale, {
+  steps: { id: StepId; label: string }[]
+  invalidFile: string
+  uploadUrlError: string
+  uploadErrorPrefix: string
+  postError: (status: number) => string
+  networkError: string
+  selectScreenshot: string
+  scannerDescription: string
+  selectedLabel: string
+  processingLabel: string
+  submitLabel: string
+  successBasePath: string
+  fallbackPath: string
+}>
+
+export function UploadForm({ locale = 'ja' }: { locale?: Locale } = {}) {
+  const t = copy[locale]
   const [preview, setPreview] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -33,7 +90,7 @@ export function UploadForm() {
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
     if (!f) return
-    if (!f.type.startsWith('image/')) { setError('画像ファイルを選択してください'); return }
+    if (!f.type.startsWith('image/')) { setError(t.invalidFile); return }
     if (preview) URL.revokeObjectURL(preview)
     setFile(f)
     setPreview(URL.createObjectURL(f))
@@ -52,7 +109,7 @@ export function UploadForm() {
       const urlRes = await fetch('/api/posts/upload-url', { method: 'POST' })
       if (!urlRes.ok) {
         const d = await urlRes.json().catch(() => ({}))
-        setError(d.error ?? 'アップロードURL取得失敗')
+        setError(d.error ?? t.uploadUrlError)
         setUploading(false)
         setActiveStep(null)
         return
@@ -66,7 +123,7 @@ export function UploadForm() {
         .from('screenshots')
         .uploadToSignedUrl(path, token, file, { contentType: file.type })
       if (upErr) {
-        setError(`アップロード失敗: ${upErr.message}`)
+        setError(`${t.uploadErrorPrefix}: ${upErr.message}`)
         setUploading(false)
         setActiveStep(null)
         return
@@ -81,16 +138,16 @@ export function UploadForm() {
       })
       if (!res.ok) {
         const d = await res.json().catch(() => ({}))
-        setError(d.error ?? `投稿失敗 (${res.status})`)
+        setError(d.error ?? t.postError(res.status))
         setUploading(false)
         setActiveStep(null)
         return
       }
       const post = await res.json().catch(() => null) as CreatedPost | null
-      router.push(post?.id ? `/posts/${post.id}?posted=1` : '/')
+      router.push(post?.id ? `${t.successBasePath}/${post.id}?posted=1` : t.fallbackPath)
       router.refresh()
     } catch {
-      setError('ネットワークエラー。再試行してください。')
+      setError(t.networkError)
       setUploading(false)
       setActiveStep(null)
     }
@@ -143,7 +200,7 @@ export function UploadForm() {
               {!preview && (
                 <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 rounded-3xl bg-black/42 p-4 text-center text-white backdrop-blur-md">
                   <ImageIcon size={26} className="mx-auto mb-2" />
-                  <div className="text-sm font-bold">スクショを選択</div>
+                  <div className="text-sm font-bold">{t.selectScreenshot}</div>
                   <div className="text-[11px] text-white/75">PNG / JPG</div>
                 </div>
               )}
@@ -165,15 +222,15 @@ export function UploadForm() {
             <div>
               <h2 className="text-lg font-black leading-tight">Setup scanner</h2>
               <p className="mt-1 text-xs leading-relaxed text-muted">
-                投稿前にiPhone画面らしさを確認し、アップロード後にAIがアプリとウィジェットを読み取ります。
+                {t.scannerDescription}
               </p>
             </div>
           </div>
 
           <div className="grid gap-2">
-            {steps.map((step, index) => {
-              const Icon = step.icon
-              const activeIndex = activeStep ? steps.findIndex(s => s.id === activeStep) : -1
+            {t.steps.map((step, index) => {
+              const Icon = stepIcons[step.id]
+              const activeIndex = activeStep ? t.steps.findIndex(s => s.id === activeStep) : -1
               const isActive = step.id === activeStep
               const isDone = activeIndex > index
               return (
@@ -199,7 +256,7 @@ export function UploadForm() {
 
         {file && (
           <div className="gallery-caption rounded-3xl p-4">
-            <div className="text-[11px] font-bold uppercase text-muted">Selected</div>
+            <div className="text-[11px] font-bold uppercase text-muted">{t.selectedLabel}</div>
             <div className="mt-1 truncate text-sm font-semibold">{file.name}</div>
             <div className="mt-1 text-xs text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</div>
           </div>
@@ -213,7 +270,7 @@ export function UploadForm() {
           className="w-full flex items-center justify-center gap-2 h-12 rounded-full text-sm font-semibold text-white bg-accent shadow-lg shadow-emerald-950/10 hover:bg-accent-strong hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {uploading ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-          {uploading ? '処理中...' : '投稿する'}
+          {uploading ? t.processingLabel : t.submitLabel}
         </button>
       </div>
     </form>

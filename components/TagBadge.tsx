@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-type Props = { tag: string; type?: 'app' | 'widget' | 'theme'; label?: string }
+type Props = { tag: string; type?: 'app' | 'widget' | 'theme'; label?: string; locale?: 'ja' | 'en' }
 
 const colors = {
   app: 'gallery-caption text-foreground hover:text-accent',
@@ -8,10 +8,14 @@ const colors = {
   theme: 'gallery-caption text-foreground hover:text-accent',
 }
 
-export function TagBadge({ tag, type = 'app', label }: Props) {
+export function TagBadge({ tag, type = 'app', label, locale = 'ja' }: Props) {
+  const href = locale === 'en'
+    ? `/en?tag=${encodeURIComponent(tag)}&type=${type}`
+    : `/?tag=${encodeURIComponent(tag)}&type=${type}`
+
   return (
     <Link
-      href={`/?tag=${encodeURIComponent(tag)}&type=${type}`}
+      href={href}
       className={`inline-block px-3 py-1 rounded-full text-xs font-semibold transition-colors ${colors[type]}`}
     >
       {label ?? tag}

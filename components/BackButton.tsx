@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { ArrowLeft } from 'lucide-react'
 
-type Props = { fallback?: string; variant?: 'icon' | 'text' }
+type Props = { fallback?: string; variant?: 'icon' | 'text'; label?: string }
 
-export function BackButton({ fallback = '/', variant = 'icon' }: Props) {
+export function BackButton({ fallback = '/', variant = 'icon', label = '戻る' }: Props) {
   const router = useRouter()
   const [hasHistory, setHasHistory] = useState(false)
 
@@ -30,7 +30,7 @@ export function BackButton({ fallback = '/', variant = 'icon' }: Props) {
         className="inline-flex items-center gap-2 text-muted hover:text-accent text-sm transition-colors"
       >
         <ArrowLeft size={16} />
-        戻る
+        {label}
       </Link>
     )
   }
@@ -40,7 +40,7 @@ export function BackButton({ fallback = '/', variant = 'icon' }: Props) {
       href={fallback}
       onClick={onClick}
       className="flex items-center justify-center w-9 h-9 rounded-full glass-soft text-muted hover:text-accent transition-colors"
-      aria-label="戻る"
+      aria-label={label}
     >
       <ArrowLeft size={18} />
     </Link>

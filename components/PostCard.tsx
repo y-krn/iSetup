@@ -16,21 +16,29 @@ type Post = {
   anon_user_id: string | null
 }
 
-type Props = { post: Post; priority?: boolean; showEdit?: boolean; featured?: boolean; initialLiked?: boolean }
+type Props = {
+  post: Post
+  priority?: boolean
+  showEdit?: boolean
+  featured?: boolean
+  initialLiked?: boolean
+  locale?: 'ja' | 'en'
+}
 
-export function PostCard({ post, priority, showEdit, featured, initialLiked }: Props) {
+export function PostCard({ post, priority, showEdit, featured, initialLiked, locale = 'ja' }: Props) {
   const tags = post.extracted_tags ?? {}
   const theme = tags.theme
   const screenType: ScreenType = (tags as { screen_type?: string; is_lock_screen?: boolean }).screen_type === 'lock' || (tags as { is_lock_screen?: boolean }).is_lock_screen ? 'lock' : 'home'
   const screenLabel = screenType === 'lock' ? 'Lock screen' : 'Home setup'
-  const date = new Intl.DateTimeFormat('ja-JP', {
+  const date = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'ja-JP', {
     month: 'short',
     day: 'numeric',
   }).format(new Date(post.created_at))
+  const postHref = locale === 'en' ? `/en/posts/${post.id}` : `/posts/${post.id}`
 
   return (
     <article className={`group ${featured ? 'sm:col-span-2 lg:col-span-3 lg:row-span-2' : 'lg:col-span-2'}`}>
-      <Link href={`/posts/${post.id}`} prefetch={false} className="block">
+      <Link href={postHref} prefetch={false} className="block">
         <div className={`gallery-shelf rounded-[2rem] p-3 sm:p-4 transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_70px_-34px_rgba(0,0,0,0.65)] active:scale-[0.99] ${featured ? 'lg:p-5' : ''}`}>
           <div className="relative mx-auto max-w-[19rem]">
             <div className="relative rounded-[2rem] bg-[linear-gradient(180deg,rgb(var(--surface)/0.64),rgb(var(--surface)/0.24))] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.36),0_26px_58px_-38px_rgba(0,0,0,0.58)] ring-1 ring-black/5 dark:ring-white/10">

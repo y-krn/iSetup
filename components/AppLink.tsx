@@ -4,14 +4,15 @@ import { extractTrackId } from '@/lib/app-store'
 
 type AppInfo = { url: string; icon: string; trackName: string }
 
-type Props = { name: string; info?: AppInfo }
+type Props = { name: string; info?: AppInfo; locale?: 'ja' | 'en' }
 
-export function AppLink({ name, info }: Props) {
+export function AppLink({ name, info, locale = 'ja' }: Props) {
   const slug = info ? (extractTrackId(info.url) ?? info.trackName) : name
+  const href = locale === 'en' ? `/en/apps/${encodeURIComponent(slug)}` : `/apps/${encodeURIComponent(slug)}`
 
   return (
     <Link
-      href={`/apps/${encodeURIComponent(slug)}`}
+      href={href}
       prefetch={false}
       className="inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full gallery-caption text-xs font-semibold hover:-translate-y-0.5 active:scale-95 transition-transform"
     >

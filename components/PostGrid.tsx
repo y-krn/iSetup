@@ -25,6 +25,7 @@ type Props = {
   filteredEmptyTitle?: string
   filteredEmptyDescription?: string
   loadingLabel?: string
+  locale?: 'ja' | 'en'
 }
 
 export function PostGrid({
@@ -38,6 +39,7 @@ export function PostGrid({
   filteredEmptyTitle = '条件に合う投稿がありません',
   filteredEmptyDescription = '別のアプリ、ウィジェット、テーマで探してみてください。',
   loadingLabel = '読み込み中...',
+  locale = 'ja',
 }: Props) {
   const [posts, setPosts] = useState<Post[]>(initialPosts)
   const [cursor, setCursor] = useState<string | null>(
@@ -117,6 +119,7 @@ export function PostGrid({
             showEdit={showEdit}
             featured={!showEdit && i === 0 && !tag && !theme}
             initialLiked={likedMap[post.id] ?? false}
+            locale={locale}
           />
         ))}
       </div>

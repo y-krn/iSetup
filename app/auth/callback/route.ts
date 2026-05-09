@@ -14,5 +14,6 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=invalid`)
+  const loginPath = next.startsWith('/en') ? '/en/login' : '/login'
+  return NextResponse.redirect(`${origin}${loginPath}?error=invalid&next=${encodeURIComponent(next)}`)
 }
