@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, LogOut } from 'lucide-react'
+import { clearAuthCache } from '@/lib/auth'
 
 export function SignOutButton() {
   const router = useRouter()
@@ -11,6 +12,7 @@ export function SignOutButton() {
   async function onClick() {
     if (signingOut) return
     setSigningOut(true)
+    clearAuthCache()
     await fetch('/api/auth/signout', { method: 'POST' })
     router.push('/')
     router.refresh()
