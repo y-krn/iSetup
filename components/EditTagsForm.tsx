@@ -9,6 +9,7 @@ import { getCurrentUserId } from '@/lib/auth'
 
 type AppInfo = { url: string; icon: string; trackName: string }
 type Candidate = { trackName: string; artistName: string; url: string; icon: string }
+type Locale = 'ja' | 'en'
 
 type Props = {
   postId: string
@@ -19,7 +20,67 @@ type Props = {
   initialTheme: string
   appLinks: Record<string, AppInfo>
   widgetLinks: Record<string, AppInfo>
+  locale?: Locale
 }
+
+const copy = {
+  ja: {
+    removeLabel: '削除',
+    loadingCandidates: '検索中...',
+    noCandidates: '候補なし',
+    checkingAuth: '権限を確認しています...',
+    unauthorized: '編集権限なし',
+    saveFailed: '保存失敗',
+    appsLabel: 'アプリ',
+    appsPlaceholder: 'アプリ名で検索して追加',
+    dockLabel: 'Dock',
+    dockPlaceholder: 'Dockアプリを検索して追加',
+    widgetsLabel: 'ウィジェット',
+    widgetsPlaceholder: 'ウィジェットの提供アプリを検索',
+    themeLabel: 'テーマ',
+    noTheme: '未指定',
+    saving: '保存中...',
+    save: '保存',
+    savedPath: (postId: string) => `/posts/${postId}`,
+  },
+  en: {
+    removeLabel: 'Remove',
+    loadingCandidates: 'Searching...',
+    noCandidates: 'No results',
+    checkingAuth: 'Checking permission...',
+    unauthorized: 'You do not have permission to edit this setup.',
+    saveFailed: 'Save failed',
+    appsLabel: 'Apps',
+    appsPlaceholder: 'Search apps to add',
+    dockLabel: 'Dock',
+    dockPlaceholder: 'Search Dock apps to add',
+    widgetsLabel: 'Widgets',
+    widgetsPlaceholder: 'Search widget apps',
+    themeLabel: 'Theme',
+    noTheme: 'Unspecified',
+    saving: 'Saving...',
+    save: 'Save',
+    savedPath: (postId: string) => `/en/posts/${postId}`,
+  },
+} satisfies Record<Locale, {
+  removeLabel: string
+  loadingCandidates: string
+  noCandidates: string
+  checkingAuth: string
+  unauthorized: string
+  saveFailed: string
+  appsLabel: string
+  appsPlaceholder: string
+  dockLabel: string
+  dockPlaceholder: string
+  widgetsLabel: string
+  widgetsPlaceholder: string
+  themeLabel: string
+  noTheme: string
+  saving: string
+  save: string
+  savedPath: (postId: string) => string
+}>
 
 function ListEditor({
   label,
@@ -28,6 +89,7 @@ function ListEditor({
   placeholder,
   links,
   setLinks,
+  locale,
 }: {
   label: string
   items: string[]
@@ -35,7 +97,9 @@ function ListEditor({
   placeholder: string
   links: Record<string, AppInfo>
   setLinks: (v: Record<string, AppInfo>) => void
+  locale: Locale
 }) {
+  const t = copy[locale]
   const [input, setInput] = useState('')
   const [candidates, setCandidates] = useState<Candidate[]>([])
   const [loading, setLoading] = useState(false)
@@ -121,7 +185,7 @@ function ListEditor({
                 type="button"
                 onClick={() => remove(i)}
                 className="w-7 h-7 -my-1 rounded-full hover:bg-danger/10 active:bg-danger/15 flex items-center justify-center text-muted hover:text-danger transition-colors"
-                aria-label="削除"
+                aria-label={t.removeLabel}
               >
                 <X size={16} strokeWidth={2.5} />
               </button>
@@ -154,11 +218,11 @@ function ListEditor({
             {loading && (
               <div className="flex items-center gap-2 text-xs text-muted px-4 py-4">
                 <Loader2 size={14} className="animate-spin" />
-                検索中...
+                {t.loadingCandidates}
               </div>
             )}
             {!loading && candidates.length === 0 && (
-              <div className="text-xs text-muted px-4 py-6 text-center">候補なし</div>
+              <div className="text-xs text-muted px-4 py-6 text-center">{t.noCandidates}</div>
             )}
             {!loading && candidates.length > 0 && (
               <ul className="py-1">
@@ -203,7 +267,9 @@ export function EditTagsForm({
   initialTheme,
   appLinks: initialAppLinks,
   widgetLinks: initialWidgetLinks,
+  locale = 'ja',
 }: Props) {
+  const t = copy[locale]
   const [apps, setApps] = useState(initialApps)
   const [dockApps, setDockApps] = useState(initialDockApps)
   const [widgets, setWidgets] = useState(initialWidgets)
@@ -222,11 +288,11 @@ export function EditTagsForm({
   if (authorized === null) {
     return (
       <div className="gallery-caption rounded-[2rem] p-6 text-sm text-muted">
-        権限を確認しています...
+        {t.checkingAuth}
       </div>
     )
   }
-  if (!authorized) return <p className="gallery-caption rounded-[2rem] p-5 text-sm font-semibold text-danger">編集権限なし</p>
+  if (!authorized) return <p className="gallery-caption rounded-[2rem] p-5 text-sm font-semibold text-danger">{t.unauthorized}</p>
 
   async function onSave() {
     setSaving(true)
@@ -245,33 +311,33 @@ export function EditTagsForm({
     })
     if (!res.ok) {
       const d = await res.json()
-      setError(d.error ?? '保存失敗')
+      setError(d.error ?? t.saveFailed)
       setSaving(false)
       return
     }
-    router.push(`/posts/${postId}`)
+    router.push(t.savedPath(postId))
     router.refresh()
   }
 
   return (
     <div className="space-y-6">
-      <ListEditor label="アプリ" items={apps} setItems={setApps} placeholder="アプリ名で検索して追加" links={appLinks} setLinks={setAppLinks} />
-      <ListEditor label="Dock" items={dockApps} setItems={setDockApps} placeholder="Dockアプリを検索して追加" links={appLinks} setLinks={setAppLinks} />
-      <ListEditor label="ウィジェット" items={widgets} setItems={setWidgets} placeholder="ウィジェットの提供アプリを検索" links={widgetLinks} setLinks={setWidgetLinks} />
+      <ListEditor label={t.appsLabel} items={apps} setItems={setApps} placeholder={t.appsPlaceholder} links={appLinks} setLinks={setAppLinks} locale={locale} />
+      <ListEditor label={t.dockLabel} items={dockApps} setItems={setDockApps} placeholder={t.dockPlaceholder} links={appLinks} setLinks={setAppLinks} locale={locale} />
+      <ListEditor label={t.widgetsLabel} items={widgets} setItems={setWidgets} placeholder={t.widgetsPlaceholder} links={widgetLinks} setLinks={setWidgetLinks} locale={locale} />
 
       <section className="gallery-caption rounded-[2rem] p-4 sm:p-5 space-y-3">
-        <h2 className="text-xs font-bold text-muted uppercase tracking-[0.16em]">テーマ</h2>
+        <h2 className="text-xs font-bold text-muted uppercase tracking-[0.16em]">{t.themeLabel}</h2>
         <div className="flex flex-wrap gap-2">
-          {(['dark', 'light', ''] as const).map(t => (
+          {(['dark', 'light', ''] as const).map(themeOption => (
             <button
-              key={t || 'none'}
+              key={themeOption || 'none'}
               type="button"
-              onClick={() => setTheme(t)}
+              onClick={() => setTheme(themeOption)}
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                theme === t ? 'bg-accent text-white shadow-md' : 'gallery-caption text-muted hover:text-foreground'
+                theme === themeOption ? 'bg-accent text-white shadow-md' : 'gallery-caption text-muted hover:text-foreground'
               }`}
             >
-              {t || '未指定'}
+              {themeOption || t.noTheme}
             </button>
           ))}
         </div>
@@ -286,7 +352,7 @@ export function EditTagsForm({
         className="w-full flex items-center justify-center gap-2 h-12 rounded-full text-sm font-semibold text-white bg-accent shadow-lg shadow-emerald-950/10 hover:bg-accent-strong hover:scale-[1.01] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
       >
         {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-        {saving ? '保存中...' : '保存'}
+        {saving ? t.saving : t.save}
       </button>
     </div>
   )

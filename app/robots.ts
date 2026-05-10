@@ -14,12 +14,13 @@ export default function robots(): MetadataRoute.Robots {
         '/me',
         '/upload',
         '/en/login',
+        '/en/me',
         '/en/upload',
         '/posts/*/edit',
+        '/en/posts/*/edit',
       ],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
   }
 }
-

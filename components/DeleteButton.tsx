@@ -5,13 +5,26 @@ import { useRouter } from 'next/navigation'
 import { Loader2, Trash2, X } from 'lucide-react'
 import { getCurrentUserId } from '@/lib/auth'
 
-type Props = { postId: string; ownerAnonId: string | null; redirectAfter?: string }
+type Props = { postId: string; ownerAnonId: string | null; redirectAfter?: string; locale?: 'ja' | 'en' }
 
-export function DeleteButton({ postId, ownerAnonId, redirectAfter }: Props) {
+export function DeleteButton({ postId, ownerAnonId, redirectAfter, locale = 'ja' }: Props) {
   const [isOwner, setIsOwner] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const router = useRouter()
+  const copy = locale === 'en'
+    ? {
+        confirm: 'Confirm delete',
+        delete: 'Delete',
+        cancel: 'Cancel',
+        failed: 'Delete failed',
+      }
+    : {
+        confirm: '削除を確定',
+        delete: '削除',
+        cancel: 'キャンセル',
+        failed: '削除失敗',
+      }
 
   useEffect(() => {
     if (!ownerAnonId) return
@@ -28,7 +41,7 @@ export function DeleteButton({ postId, ownerAnonId, redirectAfter }: Props) {
     setDeleting(true)
     const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' })
     if (!res.ok) {
-      alert('削除失敗')
+      alert(copy.failed)
       setDeleting(false)
       return
     }
@@ -47,19 +60,19 @@ export function DeleteButton({ postId, ownerAnonId, redirectAfter }: Props) {
           onClick={onDelete}
           disabled={deleting}
           className="flex h-8 items-center justify-center gap-1.5 rounded-full bg-danger px-3 text-xs font-bold text-white transition-all hover:brightness-95 active:scale-95 disabled:opacity-50"
-          aria-label="削除を確定"
-          title="削除を確定"
+          aria-label={copy.confirm}
+          title={copy.confirm}
         >
           {deleting ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
-          削除
+          {copy.delete}
         </button>
         <button
           type="button"
           onClick={() => setConfirming(false)}
           disabled={deleting}
           className="flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-white/40 hover:text-foreground disabled:opacity-50"
-          aria-label="キャンセル"
-          title="キャンセル"
+          aria-label={copy.cancel}
+          title={copy.cancel}
         >
           <X size={14} />
         </button>
@@ -72,8 +85,8 @@ export function DeleteButton({ postId, ownerAnonId, redirectAfter }: Props) {
       onClick={onDelete}
       disabled={deleting}
       className="gallery-caption flex h-9 w-9 items-center justify-center rounded-full text-muted transition-all hover:-translate-y-0.5 hover:text-danger active:scale-90 disabled:opacity-50"
-      aria-label="削除"
-      title="削除"
+      aria-label={copy.delete}
+      title={copy.delete}
     >
       {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
     </button>

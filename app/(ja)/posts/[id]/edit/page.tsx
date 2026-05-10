@@ -6,6 +6,30 @@ import { getAuthenticatedUser } from '@/lib/auth-server'
 import { EditTagsForm } from '@/components/EditTagsForm'
 
 type Props = { params: Promise<{ id: string }> }
+type Locale = 'ja' | 'en'
+
+const copy = {
+  ja: {
+    loginPrefix: '/login?next=',
+    postPrefix: '/posts',
+    heading: 'タグを編集',
+    description: 'AIが読み取ったアプリ、Dock、ウィジェット、テーマを手直しできます。',
+    backLabel: undefined,
+  },
+  en: {
+    loginPrefix: '/en/login?next=',
+    postPrefix: '/en/posts',
+    heading: 'Edit setup tags',
+    description: 'Adjust the apps, Dock, widgets, and theme detected by AI.',
+    backLabel: 'Back',
+  },
+} satisfies Record<Locale, {
+  loginPrefix: string
+  postPrefix: string
+  heading: string
+  description: string
+  backLabel?: string
+}>
 
 export const metadata = {
   robots: {
@@ -15,9 +39,16 @@ export const metadata = {
 }
 
 export default async function EditPostPage({ params }: Props) {
+  return <EditPostContent params={params} locale="ja" />
+}
+
+export async function EditPostContent({ params, locale }: Props & { locale: Locale }) {
   const { id } = await params
+  const t = copy[locale]
+  const postPath = `${t.postPrefix}/${id}`
+  const editPath = `${postPath}/edit`
   const user = await getAuthenticatedUser()
-  if (!user) redirect(`/login?next=/posts/${id}/edit`)
+  if (!user) redirect(`${t.loginPrefix}${encodeURIComponent(editPath)}`)
   const supabase = createAdminClient()
   const { data: post } = await supabase.from('posts').select('*').eq('id', id).single()
   if (!post) notFound()
@@ -27,15 +58,15 @@ export default async function EditPostPage({ params }: Props) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="space-y-3">
-        <BackButton fallback={`/posts/${id}`} variant="text" />
+        <BackButton fallback={postPath} variant="text" label={t.backLabel} />
         <div className="inline-flex items-center gap-2 rounded-full glass-soft px-3 py-1 text-xs font-bold tracking-[0.16em] text-accent uppercase">
           <SlidersHorizontal size={13} />
           Setup Editor
         </div>
         <div className="space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-black leading-tight">タグを編集</h1>
+          <h1 className="text-3xl sm:text-4xl font-black leading-tight">{t.heading}</h1>
           <p className="max-w-xl text-sm text-muted leading-relaxed">
-            AIが読み取ったアプリ、Dock、ウィジェット、テーマを手直しできます。
+            {t.description}
           </p>
         </div>
       </div>
@@ -49,6 +80,7 @@ export default async function EditPostPage({ params }: Props) {
         initialTheme={tags.theme ?? ''}
         appLinks={tags.app_links ?? {}}
         widgetLinks={tags.widget_links ?? {}}
+        locale={locale}
       />
     </div>
   )
