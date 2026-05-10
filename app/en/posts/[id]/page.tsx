@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { PostDetail, generatePostMetadata } from '@/app/posts/[id]/page'
+import { PostDetail, generatePostMetadata } from '@/app/(ja)/posts/[id]/page'
 
 type Props = {
   params: Promise<{ id: string }>
