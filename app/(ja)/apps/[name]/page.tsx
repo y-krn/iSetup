@@ -1,5 +1,4 @@
 import Image from 'next/image'
-import { notFound } from 'next/navigation'
 import { ExternalLink, Images, LayoutGrid, Star } from 'lucide-react'
 import { BackButton } from '@/components/BackButton'
 import { createAdminClient } from '@/lib/supabase/admin'
